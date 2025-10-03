@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, Image, Alert } from "react-native";
+import { Alert, Image, Pressable, Text, View } from "react-native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -23,10 +23,10 @@ export function ProductCard({ product }: ProductCardProps) {
           "Error",
           err.data?.code === "UNAUTHORIZED"
             ? "Please sign in to add items to cart"
-            : "Failed to add to cart"
+            : "Failed to add to cart",
         );
       },
-    })
+    }),
   );
 
   const handleAddToCart = () => {
@@ -100,8 +100,8 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.inventory === 0
                 ? "Out of Stock"
                 : addToCart.isPending
-                ? "Adding..."
-                : "Add to Cart"}
+                  ? "Adding..."
+                  : "Add to Cart"}
             </Text>
           </Pressable>
         </View>

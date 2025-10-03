@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
+  Alert,
   Image,
   Pressable,
+  ScrollView,
+  Text,
   TextInput,
-  Alert,
+  View,
 } from "react-native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -33,10 +33,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
           "Error",
           err.data?.code === "UNAUTHORIZED"
             ? "Please sign in to add items to cart"
-            : "Failed to add to cart"
+            : "Failed to add to cart",
         );
       },
-    })
+    }),
   );
 
   const addReview = useMutation(
@@ -48,7 +48,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
       onError: () => {
         Alert.alert("Error", "Failed to add review");
       },
-    })
+    }),
   );
 
   const handleAddToCart = () => {
@@ -63,7 +63,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
     });
   };
 
-  const handleAddReview = (rating: number, title?: string, comment?: string) => {
+  const handleAddReview = (
+    rating: number,
+    title?: string,
+    comment?: string,
+  ) => {
     addReview.mutate({
       productId: product.id,
       rating,
@@ -142,7 +146,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   <Text className="text-sm font-medium text-red-800">
                     Save $
                     {(
-                      parseFloat(product.compareAtPrice ?? "0") - parseFloat(product.price)
+                      parseFloat(product.compareAtPrice ?? "0") -
+                      parseFloat(product.price)
                     ).toFixed(2)}
                   </Text>
                 </View>
@@ -227,8 +232,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
               {product.inventory === 0
                 ? "Out of Stock"
                 : addToCart.isPending
-                ? "Adding..."
-                : "Add to Cart"}
+                  ? "Adding..."
+                  : "Add to Cart"}
             </Text>
           </Pressable>
         </View>
@@ -403,7 +408,9 @@ function ProductReviews({
                       <Text
                         key={star}
                         className={`text-sm ${
-                          star <= review.rating ? "text-yellow-400" : "text-gray-300"
+                          star <= review.rating
+                            ? "text-yellow-400"
+                            : "text-gray-300"
                         }`}
                       >
                         ★

@@ -1,7 +1,11 @@
 import { Suspense } from "react";
 
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
-import { ProductList, ProductCardSkeleton, ProductSearch } from "../_components/products";
+import {
+  ProductCardSkeleton,
+  ProductList,
+  ProductSearch,
+} from "../_components/products";
 
 export default function ProductsPage() {
   prefetch(trpc.product.all.queryOptions({ limit: 20 }));
@@ -17,7 +21,7 @@ export default function ProductsPage() {
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {[...Array(8)].map((_, i) => (
+              {Array.from({ length: 8 }, (_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
             </div>

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, TextInput } from "react-native";
+import { FlatList, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
-import { trpc } from "~/utils/api";
 import { ProductCard, ProductCardSkeleton } from "~/components/ProductCard";
+import { trpc } from "~/utils/api";
 
 export default function ProductsScreen() {
   const [search, setSearch] = useState("");
@@ -24,7 +24,7 @@ export default function ProductsScreen() {
     trpc.product.all.queryOptions({
       limit: 20,
       search: debouncedSearch || undefined,
-    })
+    }),
   );
 
   return (

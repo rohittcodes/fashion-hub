@@ -1,13 +1,13 @@
 import React from "react";
-import { Button, Text, View, FlatList, Pressable } from "react-native";
+import { Button, FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
+import type { RouterOutputs } from "~/utils/api";
+import { ProductCard, ProductCardSkeleton } from "~/components/ProductCard";
 import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
-import { ProductCard, ProductCardSkeleton } from "~/components/ProductCard";
-import type { RouterOutputs } from "~/utils/api";
 
 function MobileAuth() {
   const { data: session } = authClient.useSession();
@@ -34,7 +34,9 @@ function MobileAuth() {
 }
 
 export default function Index() {
-  const featuredProductsQuery = useQuery(trpc.product.featured.queryOptions({ limit: 8 }));
+  const featuredProductsQuery = useQuery(
+    trpc.product.featured.queryOptions({ limit: 8 }),
+  );
 
   return (
     <SafeAreaView className="bg-background">
@@ -54,7 +56,7 @@ export default function Index() {
           <Text className="mb-4 text-xl font-bold text-foreground">
             Featured Products
           </Text>
-          
+
           {featuredProductsQuery.isLoading ? (
             <FlatList
               data={Array.from({ length: 4 })}
@@ -63,17 +65,24 @@ export default function Index() {
               renderItem={() => <ProductCardSkeleton />}
               showsVerticalScrollIndicator={false}
             />
-          ) : featuredProductsQuery.data && featuredProductsQuery.data.length > 0 ? (
+          ) : featuredProductsQuery.data &&
+            featuredProductsQuery.data.length > 0 ? (
             <FlatList
               data={featuredProductsQuery.data}
               numColumns={2}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => <ProductCard product={item as RouterOutputs["product"]["all"][number]} />}
+              renderItem={({ item }) => (
+                <ProductCard
+                  product={item as RouterOutputs["product"]["all"][number]}
+                />
+              )}
               showsVerticalScrollIndicator={false}
             />
           ) : (
             <View className="flex-1 items-center justify-center">
-              <Text className="text-muted-foreground">No featured products available</Text>
+              <Text className="text-muted-foreground">
+                No featured products available
+              </Text>
             </View>
           )}
         </View>

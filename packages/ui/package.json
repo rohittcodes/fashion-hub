@@ -9,6 +9,7 @@
     "./form": "./src/form.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
+    "./textarea": "./src/textarea.tsx",
     "./theme": "./src/theme.tsx",
     "./toast": "./src/toast.tsx"
   },

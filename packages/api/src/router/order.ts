@@ -1,13 +1,15 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
-import { desc, eq, and, sql } from "@acme/db";
-import { 
-  orders, 
-  orderItems,
-  products,
+
+import { and, desc, eq, sql } from "@acme/db";
+import {
+  cartItems,
   categories,
-  cartItems
+  orderItems,
+  orders,
+  products,
 } from "@acme/db/schema";
+
 import { protectedProcedure } from "../trpc";
 
 // Helper function to generate order number
@@ -24,20 +26,22 @@ export const orderRouter = {
       z.object({
         limit: z.number().min(1).max(50).default(20),
         offset: z.number().min(0).default(0),
-        status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]).optional(),
-      })
+        status: z
+          .enum(["pending", "processing", "shipped", "delivered", "cancelled"])
+          .optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       if (!ctx.session.user.id) {
         throw new Error("User not authenticated");
       }
-      
+
       const conditions = [eq(orders.userId, ctx.session.user.id)];
-      
+
       if (input.status) {
         conditions.push(eq(orders.status, input.status));
       }
-      
+
       const userOrders = await ctx.db
         .select({
           id: orders.id,
@@ -56,7 +60,7 @@ export const orderRouter = {
         .orderBy(desc(orders.createdAt))
         .limit(input.limit)
         .offset(input.offset);
-      
+
       return userOrders;
     }),
 
@@ -67,18 +71,18 @@ export const orderRouter = {
       if (!ctx.session.user.id) {
         throw new Error("User not authenticated");
       }
-      
+
       const order = await ctx.db.query.orders.findFirst({
         where: and(
           eq(orders.id, input.id),
-          eq(orders.userId, ctx.session.user.id)
+          eq(orders.userId, ctx.session.user.id),
         ),
       });
-      
+
       if (!order) {
         throw new Error("Order not found");
       }
-      
+
       // Get order items with product details
       const orderItemsWithProducts = await ctx.db
         .select({
@@ -99,10 +103,10 @@ export const orderRouter = {
         .leftJoin(products, eq(orderItems.productId, products.id))
         .leftJoin(categories, eq(products.categoryId, categories.id))
         .where(eq(orderItems.orderId, input.id));
-      
+
       return {
         ...order,
-        items: orderItemsWithProducts.map(item => ({
+        items: orderItemsWithProducts.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           price: item.price,
@@ -130,18 +134,18 @@ export const orderRouter = {
       if (!ctx.session.user.id) {
         throw new Error("User not authenticated");
       }
-      
+
       const order = await ctx.db.query.orders.findFirst({
         where: and(
           eq(orders.orderNumber, input.orderNumber),
-          eq(orders.userId, ctx.session.user.id)
+          eq(orders.userId, ctx.session.user.id),
         ),
       });
-      
+
       if (!order) {
         throw new Error("Order not found");
       }
-      
+
       return order;
     }),
 
@@ -154,13 +158,13 @@ export const orderRouter = {
         notes: z.string().max(500).optional(),
         taxRate: z.number().min(0).max(1).default(0.08), // 8% tax
         shippingCost: z.number().min(0).default(0),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.session.user.id) {
         throw new Error("User not authenticated");
       }
-      
+
       // Get cart items with product details
       const cartItemsWithProducts = await ctx.db
         .select({
@@ -177,33 +181,38 @@ export const orderRouter = {
         .from(cartItems)
         .leftJoin(products, eq(cartItems.productId, products.id))
         .where(eq(cartItems.userId, ctx.session.user.id));
-      
+
       if (cartItemsWithProducts.length === 0) {
         throw new Error("Cart is empty");
       }
-      
+
       // Validate cart items
       const invalidItems = cartItemsWithProducts.filter((item) => {
-        const product = item.product as { isActive: boolean; inventory: number } | null;
-        return !product || 
-               !product.isActive || 
-               product.inventory < item.quantity;
+        const product = item.product as {
+          isActive: boolean;
+          inventory: number;
+        } | null;
+        return (
+          !product || !product.isActive || product.inventory < item.quantity
+        );
       });
-      
+
       if (invalidItems.length > 0) {
-        throw new Error("Some items in your cart are no longer available or have insufficient inventory");
+        throw new Error(
+          "Some items in your cart are no longer available or have insufficient inventory",
+        );
       }
-      
+
       // Calculate totals
       const subtotal = cartItemsWithProducts.reduce((sum, item) => {
         const product = item.product as { price: string };
-        return sum + (parseFloat(product.price) * item.quantity);
+        return sum + parseFloat(product.price) * item.quantity;
       }, 0);
-      
+
       const tax = subtotal * input.taxRate;
       const shipping = input.shippingCost;
       const total = subtotal + tax + shipping;
-      
+
       // Create order
       const orderNumber = generateOrderNumber();
       const [order] = await ctx.db
@@ -222,11 +231,11 @@ export const orderRouter = {
           notes: input.notes,
         })
         .returning();
-      
+
       if (!order) {
         throw new Error("Failed to create order");
       }
-      
+
       // Create order items and update inventory
       const orderItemsData = cartItemsWithProducts.map((item) => {
         const product = item.product as { id: string; price: string };
@@ -237,9 +246,9 @@ export const orderRouter = {
           price: product.price,
         };
       });
-      
+
       await ctx.db.insert(orderItems).values(orderItemsData);
-      
+
       // Update product inventory
       for (const item of cartItemsWithProducts) {
         const product = item.product as { id: string };
@@ -250,12 +259,12 @@ export const orderRouter = {
           })
           .where(eq(products.id, product.id));
       }
-      
+
       // Clear cart
       await ctx.db
         .delete(cartItems)
         .where(eq(cartItems.userId, ctx.session.user.id));
-      
+
       return order;
     }),
 
@@ -268,14 +277,14 @@ export const orderRouter = {
           z.object({
             productId: z.string(),
             quantity: z.number().int().min(1),
-          })
+          }),
         ),
         shippingAddress: z.string(),
         billingAddress: z.string(),
         notes: z.string().max(500).optional(),
         taxRate: z.number().min(0).max(1).default(0.08),
         shippingCost: z.number().min(0).default(0),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Get products and validate
@@ -283,26 +292,26 @@ export const orderRouter = {
         .select()
         .from(products)
         .where(
-          sql`${products.id} IN (${input.items.map((item) => `'${item.productId}'`).join(",")})`
+          sql`${products.id} IN (${input.items.map((item) => `'${item.productId}'`).join(",")})`,
         );
-      
+
       if (productsData.length !== input.items.length) {
         throw new Error("Some products not found");
       }
-      
+
       // Calculate totals
       const subtotal = input.items.reduce((sum, item) => {
         const product = productsData.find((p) => p.id === item.productId);
         if (!product) {
           throw new Error("Product not found");
         }
-        return sum + (parseFloat(product.price) * item.quantity);
+        return sum + parseFloat(product.price) * item.quantity;
       }, 0);
-      
+
       const tax = subtotal * input.taxRate;
       const shipping = input.shippingCost;
       const total = subtotal + tax + shipping;
-      
+
       // Create order
       const orderNumber = generateOrderNumber();
       const [order] = await ctx.db
@@ -321,11 +330,11 @@ export const orderRouter = {
           notes: input.notes,
         })
         .returning();
-      
+
       if (!order) {
         throw new Error("Failed to create order");
       }
-      
+
       // Create order items
       const orderItemsData = input.items.map((item) => {
         const product = productsData.find((p) => p.id === item.productId);
@@ -339,9 +348,9 @@ export const orderRouter = {
           price: product.price,
         };
       });
-      
+
       await ctx.db.insert(orderItems).values(orderItemsData);
-      
+
       return order;
     }),
 
@@ -350,8 +359,14 @@ export const orderRouter = {
     .input(
       z.object({
         orderId: z.string(),
-        status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]),
-      })
+        status: z.enum([
+          "pending",
+          "processing",
+          "shipped",
+          "delivered",
+          "cancelled",
+        ]),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [order] = await ctx.db
@@ -359,11 +374,11 @@ export const orderRouter = {
         .set({ status: input.status })
         .where(eq(orders.id, input.orderId))
         .returning();
-      
+
       if (!order) {
         throw new Error("Order not found");
       }
-      
+
       return order;
     }),
 
@@ -374,40 +389,40 @@ export const orderRouter = {
       if (!ctx.session.user.id) {
         throw new Error("User not authenticated");
       }
-      
+
       const order = await ctx.db.query.orders.findFirst({
         where: and(
           eq(orders.id, input),
-          eq(orders.userId, ctx.session.user.id)
+          eq(orders.userId, ctx.session.user.id),
         ),
       });
-      
+
       if (!order) {
         throw new Error("Order not found");
       }
-      
+
       if (order.status === "cancelled") {
         throw new Error("Order is already cancelled");
       }
-      
+
       if (order.status === "delivered") {
         throw new Error("Cannot cancel delivered order");
       }
-      
+
       // Update order status
       const [updatedOrder] = await ctx.db
         .update(orders)
         .set({ status: "cancelled" })
         .where(eq(orders.id, input))
         .returning();
-      
+
       // Restore inventory if order was not shipped
       if (order.status !== "shipped") {
         const orderItemsData = await ctx.db
           .select()
           .from(orderItems)
           .where(eq(orderItems.orderId, input));
-        
+
         for (const item of orderItemsData) {
           await ctx.db
             .update(products)
@@ -417,31 +432,31 @@ export const orderRouter = {
             .where(eq(products.id, item.productId));
         }
       }
-      
+
       return updatedOrder;
     }),
 
   // Get order statistics
-  getStats: protectedProcedure
-    .query(async ({ ctx }) => {
-      if (!ctx.session.user.id) {
-        throw new Error("User not authenticated");
-      }
-      
-      const stats = await ctx.db
-        .select({
-          totalOrders: sql<number>`COUNT(*)`,
-          totalSpent: sql<string>`SUM(${orders.total})`,
-          pendingOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'pending' THEN 1 END)`,
-          processingOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'processing' THEN 1 END)`,
-          shippedOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'shipped' THEN 1 END)`,
-          deliveredOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'delivered' THEN 1 END)`,
-          cancelledOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'cancelled' THEN 1 END)`,
-        })
-        .from(orders)
-        .where(eq(orders.userId, ctx.session.user.id));
-      
-      return stats[0] ?? {
+  getStats: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.session.user.id) {
+      throw new Error("User not authenticated");
+    }
+
+    const stats = await ctx.db
+      .select({
+        totalOrders: sql<number>`COUNT(*)`,
+        totalSpent: sql<string>`SUM(${orders.total})`,
+        pendingOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'pending' THEN 1 END)`,
+        processingOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'processing' THEN 1 END)`,
+        shippedOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'shipped' THEN 1 END)`,
+        deliveredOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'delivered' THEN 1 END)`,
+        cancelledOrders: sql<number>`COUNT(CASE WHEN ${orders.status} = 'cancelled' THEN 1 END)`,
+      })
+      .from(orders)
+      .where(eq(orders.userId, ctx.session.user.id));
+
+    return (
+      stats[0] ?? {
         totalOrders: 0,
         totalSpent: "0.00",
         pendingOrders: 0,
@@ -449,8 +464,9 @@ export const orderRouter = {
         shippedOrders: 0,
         deliveredOrders: 0,
         cancelledOrders: 0,
-      };
-    }),
+      }
+    );
+  }),
 
   // Get all orders (admin only)
   getAll: protectedProcedure
@@ -458,21 +474,23 @@ export const orderRouter = {
       z.object({
         limit: z.number().min(1).max(100).default(20),
         offset: z.number().min(0).default(0),
-        status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]).optional(),
+        status: z
+          .enum(["pending", "processing", "shipped", "delivered", "cancelled"])
+          .optional(),
         userId: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const conditions = [];
-      
+
       if (input.status) {
         conditions.push(eq(orders.status, input.status));
       }
-      
+
       if (input.userId) {
         conditions.push(eq(orders.userId, input.userId));
       }
-      
+
       const allOrders = await ctx.db
         .select({
           id: orders.id,
@@ -492,7 +510,7 @@ export const orderRouter = {
         .orderBy(desc(orders.createdAt))
         .limit(input.limit)
         .offset(input.offset);
-      
+
       return allOrders;
     }),
 } satisfies TRPCRouterRecord;

@@ -2,7 +2,7 @@ import type { BetterAuthOptions } from "better-auth";
 import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { oAuthProxy } from "better-auth/plugins";
+import { admin, oAuthProxy } from "better-auth/plugins";
 
 import { db } from "@acme/db/client";
 
@@ -21,6 +21,7 @@ export function initAuth(options: {
     baseURL: options.baseUrl,
     secret: options.secret,
     plugins: [
+      admin(),
       oAuthProxy({
         /**
          * Auto-inference blocked by https://github.com/better-auth/better-auth/pull/2891
@@ -34,10 +35,10 @@ export function initAuth(options: {
       discord: {
         clientId: options.discordClientId,
         clientSecret: options.discordClientSecret,
-        redirectURI: `${options.productionUrl}/api/auth/callback/discord`,
+        redirectURI: `${options.baseUrl}/api/auth/callback/discord`,
       },
     },
-    trustedOrigins: ["expo://"],
+    trustedOrigins: ["expo://", "fashion-hub://"],
   } satisfies BetterAuthOptions;
 
   return betterAuth(config);

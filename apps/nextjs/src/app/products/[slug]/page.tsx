@@ -8,7 +8,7 @@ interface ProductPageProps {
 
 export default async function ProductPage(props: ProductPageProps) {
   const { slug } = await props.params;
-  
+
   // Prefetch the product data
   prefetch(trpc.product.bySlug.queryOptions({ slug }));
 

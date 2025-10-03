@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, Image, Alert } from "react-native";
+import { Alert, Image, Pressable, Text, View } from "react-native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -20,7 +20,7 @@ export function CartItem({ item }: CartItemProps) {
       onError: () => {
         Alert.alert("Error", "Failed to update quantity");
       },
-    })
+    }),
   );
 
   const removeItem = useMutation(
@@ -32,7 +32,7 @@ export function CartItem({ item }: CartItemProps) {
       onError: () => {
         Alert.alert("Error", "Failed to remove item");
       },
-    })
+    }),
   );
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -54,7 +54,7 @@ export function CartItem({ item }: CartItemProps) {
       [
         { text: "Cancel", style: "cancel" },
         { text: "Remove", onPress: () => removeItem.mutate(item.id) },
-      ]
+      ],
     );
   };
 
@@ -106,7 +106,10 @@ export function CartItem({ item }: CartItemProps) {
             className="h-8 w-8 items-center justify-center rounded-md border border-gray-300"
             onPress={() => handleQuantityChange(item.quantity + 1)}
             disabled={
-              updateQuantity.isPending || (item.product.inventory ? item.quantity >= item.product.inventory : false)
+              updateQuantity.isPending ||
+              (item.product.inventory
+                ? item.quantity >= item.product.inventory
+                : false)
             }
           >
             <Text className="text-lg font-medium text-gray-600">+</Text>
@@ -129,7 +132,11 @@ export function CartItem({ item }: CartItemProps) {
   );
 }
 
-export function CartSummary({ totals }: { totals: RouterOutputs["cart"]["get"]["totals"] }) {
+export function CartSummary({
+  totals,
+}: {
+  totals: RouterOutputs["cart"]["get"]["totals"];
+}) {
   const subtotal = parseFloat(totals.subtotal);
   const tax = subtotal * 0.08; // 8% tax
   const shipping = subtotal > 50 ? 0 : 5.99; // Free shipping over $50

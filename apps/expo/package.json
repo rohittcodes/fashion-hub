@@ -61,7 +61,10 @@
   },
   "expo": {
     "install": {
-      "exclude": ["@expo/config-plugins", "react-native"]
+      "exclude": [
+        "@expo/config-plugins",
+        "react-native"
+      ]
     }
   },
   "prettier": "@acme/prettier-config"

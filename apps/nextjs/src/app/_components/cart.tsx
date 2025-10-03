@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import {
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
@@ -49,7 +50,7 @@ export function CartItem(props: { item: CartItemType }) {
       onError: () => {
         toast.error("Failed to update quantity");
       },
-    })
+    }),
   );
 
   const removeItem = useMutation(
@@ -61,7 +62,7 @@ export function CartItem(props: { item: CartItemType }) {
       onError: () => {
         toast.error("Failed to remove item");
       },
-    })
+    }),
   );
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -84,7 +85,9 @@ export function CartItem(props: { item: CartItemType }) {
     <div className="flex items-center gap-4 rounded-lg border bg-card p-4">
       <Link href={`/products/${item.product.slug}`}>
         <div className="h-20 w-20 overflow-hidden rounded-md bg-muted">
-          {item.product.images && item.product.images.length > 0 && item.product.images[0] ? (
+          {item.product.images &&
+          item.product.images.length > 0 &&
+          item.product.images[0] ? (
             <Image
               src={item.product.images[0]}
               alt={item.product.name ?? "Product"}
@@ -93,7 +96,7 @@ export function CartItem(props: { item: CartItemType }) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground text-xs">
+            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
               No Image
             </div>
           )}
@@ -129,8 +132,10 @@ export function CartItem(props: { item: CartItemType }) {
           variant="outline"
           onClick={() => handleQuantityChange(item.quantity + 1)}
           disabled={
-            updateQuantity.isPending || 
-            (item.product.inventory ? item.quantity >= item.product.inventory : false)
+            updateQuantity.isPending ||
+            (item.product.inventory
+              ? item.quantity >= item.product.inventory
+              : false)
           }
         >
           +
@@ -166,31 +171,29 @@ export function CartSummary(props: { totals: CartTotalsType }) {
   return (
     <div className="rounded-lg border bg-card p-6">
       <h3 className="mb-4 text-lg font-semibold">Order Summary</h3>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between">
           <span>Subtotal ({totals.itemCount} items)</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        
+
         <div className="flex justify-between">
           <span>Tax</span>
           <span>${tax.toFixed(2)}</span>
         </div>
-        
+
         <div className="flex justify-between">
           <span>Shipping</span>
-          <span>
-            {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
-          </span>
+          <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
         </div>
-        
+
         {subtotal < 50 && (
           <p className="text-sm text-muted-foreground">
             Add ${(50 - subtotal).toFixed(2)} more for free shipping!
           </p>
         )}
-        
+
         <div className="border-t pt-2">
           <div className="flex justify-between font-semibold">
             <span>Total</span>
@@ -198,7 +201,7 @@ export function CartSummary(props: { totals: CartTotalsType }) {
           </div>
         </div>
       </div>
-      
+
       <Button className="mt-4 w-full" size="lg">
         Proceed to Checkout
       </Button>
@@ -215,7 +218,9 @@ export function CartList() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground">Your cart is empty</h2>
+          <h2 className="text-2xl font-bold text-foreground">
+            Your cart is empty
+          </h2>
           <p className="mt-2 text-muted-foreground">
             Add some products to get started!
           </p>
@@ -244,12 +249,12 @@ export function CartPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-8 text-3xl font-bold">Shopping Cart</h1>
-      
+
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <CartList />
         </div>
-        
+
         <div>
           <CartSummary totals={cart.totals} />
         </div>
@@ -261,18 +266,24 @@ export function CartPage() {
 // Cart Icon Component (for header)
 export function CartIcon() {
   const trpc = useTRPC();
-  const { data: cartCount } = useSuspenseQuery(
-    trpc.cart.getCount.queryOptions()
+  const { data: session } = useSuspenseQuery(
+    trpc.auth.getSession.queryOptions(),
   );
 
+  const { data: cartCount } = useQuery({
+    ...trpc.cart.getCount.queryOptions(),
+    enabled: !!session?.user,
+  });
+
+  // Always render the same structure to avoid hydration mismatch
   return (
     <Link href="/cart" className="relative">
       <Button variant="ghost" size="sm">
-        Cart ({cartCount.totalQuantity})
+        Cart ({cartCount?.totalQuantity ?? 0})
       </Button>
-      {cartCount.totalQuantity > 0 && (
+      {(cartCount?.totalQuantity ?? 0) > 0 && (
         <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-          {cartCount.totalQuantity}
+          {cartCount?.totalQuantity ?? 0}
         </span>
       )}
     </Link>

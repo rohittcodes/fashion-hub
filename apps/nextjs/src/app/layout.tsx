@@ -82,10 +82,13 @@ function Navigation() {
         <Link href="/" className="text-xl font-bold">
           Fashion Hub
         </Link>
-        
+
         <div className="flex items-center gap-4">
           <Link href="/products">
             <Button variant="ghost">Products</Button>
+          </Link>
+          <Link href="/admin">
+            <Button variant="ghost">Admin</Button>
           </Link>
           <CartIcon />
         </div>

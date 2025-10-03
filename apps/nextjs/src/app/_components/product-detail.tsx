@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import {
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import { Input } from "@acme/ui/input";
@@ -53,10 +51,10 @@ export function ProductDetail(props: {
         toast.error(
           err.data?.code === "UNAUTHORIZED"
             ? "Please sign in to add items to cart"
-            : "Failed to add to cart"
+            : "Failed to add to cart",
         );
       },
-    })
+    }),
   );
 
   const addReview = useMutation(
@@ -68,7 +66,7 @@ export function ProductDetail(props: {
       onError: (_err) => {
         toast.error("Failed to add review");
       },
-    })
+    }),
   );
 
   const handleAddToCart = () => {
@@ -76,14 +74,18 @@ export function ProductDetail(props: {
       toast.error("Not enough inventory");
       return;
     }
-    
+
     addToCart.mutate({
       productId: product.id,
       quantity,
     });
   };
 
-  const handleAddReview = (rating: number, title?: string, comment?: string) => {
+  const handleAddReview = (
+    rating: number,
+    title?: string,
+    comment?: string,
+  ) => {
     addReview.mutate({
       productId: product.id,
       rating,
@@ -93,7 +95,8 @@ export function ProductDetail(props: {
   };
 
   const images = product.images ?? [];
-  const hasDiscount = product.compareAtPrice && 
+  const hasDiscount =
+    product.compareAtPrice &&
     parseFloat(product.compareAtPrice) > parseFloat(product.price);
 
   return (
@@ -102,21 +105,21 @@ export function ProductDetail(props: {
         {/* Product Images */}
         <div className="space-y-4">
           <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-          {images.length > 0 && images[selectedImageIndex] ? (
-            <Image
-              src={images[selectedImageIndex]}
-              alt={product.name}
-              width={600}
-              height={600}
-              className="h-full w-full object-cover"
-            />
-          ) : (
+            {images.length > 0 && images[selectedImageIndex] ? (
+              <Image
+                src={images[selectedImageIndex]}
+                alt={product.name}
+                width={600}
+                height={600}
+                className="h-full w-full object-cover"
+              />
+            ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                 No Image Available
               </div>
             )}
           </div>
-          
+
           {images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {images.map((image: string, index: number) => (
@@ -127,7 +130,7 @@ export function ProductDetail(props: {
                     "aspect-square overflow-hidden rounded-md border-2 transition-colors",
                     selectedImageIndex === index
                       ? "border-primary"
-                      : "border-transparent hover:border-muted-foreground"
+                      : "border-transparent hover:border-muted-foreground",
                   )}
                 >
                   <Image
@@ -166,7 +169,11 @@ export function ProductDetail(props: {
                   ${product.compareAtPrice}
                 </span>
                 <span className="rounded bg-red-100 px-2 py-1 text-sm font-medium text-red-800">
-                  Save ${(parseFloat(product.compareAtPrice ?? "0") - parseFloat(product.price)).toFixed(2)}
+                  Save $
+                  {(
+                    parseFloat(product.compareAtPrice ?? "0") -
+                    parseFloat(product.price)
+                  ).toFixed(2)}
                 </span>
               </>
             )}
@@ -174,13 +181,13 @@ export function ProductDetail(props: {
 
           <div className="space-y-2">
             <p className="text-foreground">{product.description}</p>
-            
+
             {product.sku && (
               <p className="text-sm text-muted-foreground">
                 SKU: {product.sku}
               </p>
             )}
-            
+
             <p className="text-sm text-muted-foreground">
               Weight: {product.weight ? `${product.weight} lbs` : "N/A"}
             </p>
@@ -190,10 +197,9 @@ export function ProductDetail(props: {
           <div className="space-y-2">
             {product.inventory > 0 ? (
               <p className="text-sm text-green-600">
-                {product.inventory > 10 
-                  ? "In Stock" 
-                  : `Only ${product.inventory} left in stock!`
-                }
+                {product.inventory > 10
+                  ? "In Stock"
+                  : `Only ${product.inventory} left in stock!`}
               </p>
             ) : (
               <p className="text-sm text-red-600">Out of Stock</p>
@@ -223,7 +229,9 @@ export function ProductDetail(props: {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setQuantity(Math.min(product.inventory, quantity + 1))}
+                  onClick={() =>
+                    setQuantity(Math.min(product.inventory, quantity + 1))
+                  }
                   disabled={quantity >= product.inventory}
                 >
                   +
@@ -237,12 +245,11 @@ export function ProductDetail(props: {
               disabled={addToCart.isPending || product.inventory === 0}
               className="w-full"
             >
-              {product.inventory === 0 
-                ? "Out of Stock" 
-                : addToCart.isPending 
-                  ? "Adding..." 
-                  : "Add to Cart"
-              }
+              {product.inventory === 0
+                ? "Out of Stock"
+                : addToCart.isPending
+                  ? "Adding..."
+                  : "Add to Cart"}
             </Button>
           </div>
 
@@ -267,8 +274,8 @@ export function ProductDetail(props: {
 
       {/* Reviews Section */}
       <div className="mt-12">
-        <ProductReviews 
-          productId={product.id} 
+        <ProductReviews
+          productId={product.id}
           reviews={product.reviews}
           onAddReview={handleAddReview}
         />
@@ -301,7 +308,7 @@ export function ProductReviews(props: {
       toast.error("Please select a rating");
       return;
     }
-    
+
     onAddReview(rating, title || undefined, comment || undefined);
     setShowReviewForm(false);
     setRating(0);
@@ -309,9 +316,10 @@ export function ProductReviews(props: {
     setComment("");
   };
 
-  const _averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-    : 0;
+  const _averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -326,7 +334,7 @@ export function ProductReviews(props: {
       {showReviewForm && (
         <div className="rounded-lg border bg-card p-6">
           <h3 className="mb-4 text-lg font-semibold">Write a Review</h3>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium">Rating</label>
@@ -337,7 +345,7 @@ export function ProductReviews(props: {
                     onClick={() => setRating(star)}
                     className={cn(
                       "text-2xl",
-                      star <= rating ? "text-yellow-400" : "text-gray-300"
+                      star <= rating ? "text-yellow-400" : "text-gray-300",
                     )}
                   >
                     ★
@@ -347,7 +355,9 @@ export function ProductReviews(props: {
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Title (Optional)</label>
+              <label className="block text-sm font-medium">
+                Title (Optional)
+              </label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -356,7 +366,9 @@ export function ProductReviews(props: {
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Comment (Optional)</label>
+              <label className="block text-sm font-medium">
+                Comment (Optional)
+              </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -368,8 +380,8 @@ export function ProductReviews(props: {
 
             <div className="flex gap-2">
               <Button onClick={handleSubmitReview}>Submit Review</Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowReviewForm(false)}
               >
                 Cancel
@@ -382,7 +394,9 @@ export function ProductReviews(props: {
       {/* Reviews List */}
       <div className="space-y-4">
         {reviews.length === 0 ? (
-          <p className="text-muted-foreground">No reviews yet. Be the first to review!</p>
+          <p className="text-muted-foreground">
+            No reviews yet. Be the first to review!
+          </p>
         ) : (
           reviews.map((review) => (
             <div key={review.id} className="rounded-lg border bg-card p-4">
@@ -395,7 +409,9 @@ export function ProductReviews(props: {
                         key={star}
                         className={cn(
                           "text-sm",
-                          star <= review.rating ? "text-yellow-400" : "text-gray-300"
+                          star <= review.rating
+                            ? "text-yellow-400"
+                            : "text-gray-300",
                         )}
                       >
                         ★
@@ -407,11 +423,11 @@ export function ProductReviews(props: {
                   {new Date(review.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              
+
               {review.title && (
                 <h4 className="mt-2 font-semibold">{review.title}</h4>
               )}
-              
+
               {review.comment && (
                 <p className="mt-1 text-muted-foreground">{review.comment}</p>
               )}

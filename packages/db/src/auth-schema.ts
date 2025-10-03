@@ -6,6 +6,10 @@ export const user = pgTable("user", (t) => ({
   email: t.text().notNull().unique(),
   emailVerified: t.boolean().notNull(),
   image: t.text(),
+  role: t.text().notNull().default("user"), // "user" or "admin"
+  banned: t.boolean().default(false),
+  banReason: t.text(),
+  banExpires: t.timestamp(),
   createdAt: t.timestamp().notNull(),
   updatedAt: t.timestamp().notNull(),
 }));
@@ -18,6 +22,7 @@ export const session = pgTable("session", (t) => ({
   updatedAt: t.timestamp().notNull(),
   ipAddress: t.text(),
   userAgent: t.text(),
+  impersonatedBy: t.text(),
   userId: t
     .text()
     .notNull()

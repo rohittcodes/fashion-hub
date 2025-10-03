@@ -1,21 +1,21 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
-import { trpc } from "~/utils/api";
 import { ProductDetail } from "~/components/ProductDetail";
+import { trpc } from "~/utils/api";
 
 export default function ProductDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
   const productQuery = useQuery(
-    trpc.product.bySlug.queryOptions({ slug: slug || "" })
+    trpc.product.bySlug.queryOptions({ slug: slug || "" }),
   );
 
   const productDetailQuery = useQuery(
-    trpc.product.byId.queryOptions({ id: productQuery.data?.id ?? "" })
+    trpc.product.byId.queryOptions({ id: productQuery.data?.id ?? "" }),
   );
 
   if (productQuery.isLoading) {

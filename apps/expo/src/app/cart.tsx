@@ -1,11 +1,11 @@
 import React from "react";
-import { View, Text, ScrollView } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
-import { trpc } from "~/utils/api";
 import { CartItem, CartSummary } from "~/components/CartItem";
+import { trpc } from "~/utils/api";
 
 export default function CartScreen() {
   const cartQuery = useQuery(trpc.cart.get.queryOptions());

@@ -1,8 +1,8 @@
 import { authRouter } from "./router/auth";
-import { productRouter } from "./router/product";
-import { categoryRouter } from "./router/category";
 import { cartRouter } from "./router/cart";
+import { categoryRouter } from "./router/category";
 import { orderRouter } from "./router/order";
+import { productRouter } from "./router/product";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({

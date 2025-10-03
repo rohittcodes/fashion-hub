@@ -2,10 +2,10 @@ import { Suspense } from "react";
 
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
 import { AuthShowcase } from "./_components/auth-showcase";
-import { 
-  FeaturedProducts, 
+import {
+  CategoryList,
+  FeaturedProducts,
   ProductCardSkeleton,
-  CategoryList 
 } from "./_components/products";
 
 export default function HomePage() {
@@ -30,12 +30,17 @@ export default function HomePage() {
 
         {/* Categories */}
         <section className="container mx-auto px-4 py-8">
-          <h2 className="mb-6 text-2xl font-bold text-center">Shop by Category</h2>
+          <h2 className="mb-6 text-center text-2xl font-bold">
+            Shop by Category
+          </h2>
           <Suspense
             fallback={
               <div className="flex flex-wrap gap-2">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-8 w-20 animate-pulse rounded-full bg-muted" />
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-8 w-20 animate-pulse rounded-full bg-muted"
+                  />
                 ))}
               </div>
             }
@@ -49,9 +54,11 @@ export default function HomePage() {
           fallback={
             <section className="py-12">
               <div className="container mx-auto px-4">
-                <h2 className="mb-8 text-3xl font-bold text-center">Featured Products</h2>
+                <h2 className="mb-8 text-center text-3xl font-bold">
+                  Featured Products
+                </h2>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                  {[...Array(4)].map((_, i) => (
+                  {Array.from({ length: 4 }).map((_, i) => (
                     <ProductCardSkeleton key={i} />
                   ))}
                 </div>

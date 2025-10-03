@@ -1,5 +1,13 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, decimal, integer, boolean, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  decimal,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -11,8 +19,9 @@ export const categories = pgTable("categories", {
   image: text(),
   isActive: boolean().notNull().default(true),
   createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
+    () => sql`now()`,
+  ),
 });
 
 export const products = pgTable("products", {
@@ -31,8 +40,9 @@ export const products = pgTable("products", {
   isFeatured: boolean().notNull().default(false),
   tags: text().array(),
   createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
+    () => sql`now()`,
+  ),
 });
 
 export const orders = pgTable("orders", {
@@ -49,14 +59,19 @@ export const orders = pgTable("orders", {
   billingAddress: text().notNull(), // JSON string of address
   notes: text(),
   createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
+    () => sql`now()`,
+  ),
 });
 
 export const orderItems = pgTable("order_items", {
   id: uuid().notNull().primaryKey().defaultRandom(),
-  orderId: uuid().notNull().references(() => orders.id, { onDelete: "cascade" }),
-  productId: uuid().notNull().references(() => products.id),
+  orderId: uuid()
+    .notNull()
+    .references(() => orders.id, { onDelete: "cascade" }),
+  productId: uuid()
+    .notNull()
+    .references(() => products.id),
   quantity: integer().notNull(),
   price: decimal({ precision: 10, scale: 2 }).notNull(), // Price at time of order
   createdAt: timestamp().defaultNow().notNull(),
@@ -65,24 +80,30 @@ export const orderItems = pgTable("order_items", {
 export const cartItems = pgTable("cart_items", {
   id: uuid().notNull().primaryKey().defaultRandom(),
   userId: text().notNull(), // References user.id from auth schema
-  productId: uuid().notNull().references(() => products.id, { onDelete: "cascade" }),
+  productId: uuid()
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
   quantity: integer().notNull(),
   createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
+    () => sql`now()`,
+  ),
 });
 
 export const productReviews = pgTable("product_reviews", {
   id: uuid().notNull().primaryKey().defaultRandom(),
-  productId: uuid().notNull().references(() => products.id, { onDelete: "cascade" }),
+  productId: uuid()
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
   userId: text().notNull(), // References user.id from auth schema
   rating: integer().notNull(), // 1-5 stars
   title: text(),
   comment: text(),
   isVerified: boolean().notNull().default(false),
   createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
+    () => sql`now()`,
+  ),
 });
 
 export const CreateCategorySchema = createInsertSchema(categories, {
@@ -101,10 +122,16 @@ export const CreateProductSchema = createInsertSchema(products, {
   description: z.string().max(2000).optional(),
   slug: z.string().min(1).max(200),
   price: z.string().regex(/^\d+\.\d{2}$/, "Price must be in format 0.00"),
-  compareAtPrice: z.string().regex(/^\d+\.\d{2}$/, "Compare price must be in format 0.00").optional(),
+  compareAtPrice: z
+    .string()
+    .regex(/^\d+\.\d{2}$/, "Compare price must be in format 0.00")
+    .optional(),
   sku: z.string().max(50).optional(),
   inventory: z.number().int().min(0),
-  weight: z.string().regex(/^\d+\.\d{2}$/, "Weight must be in format 0.00").optional(),
+  weight: z
+    .string()
+    .regex(/^\d+\.\d{2}$/, "Weight must be in format 0.00")
+    .optional(),
   images: z.array(z.string().url()).optional(),
   tags: z.array(z.string()).optional(),
 }).omit({
@@ -115,7 +142,13 @@ export const CreateProductSchema = createInsertSchema(products, {
 
 export const CreateOrderSchema = createInsertSchema(orders, {
   orderNumber: z.string().min(1),
-  status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]),
+  status: z.enum([
+    "pending",
+    "processing",
+    "shipped",
+    "delivered",
+    "cancelled",
+  ]),
   subtotal: z.string().regex(/^\d+\.\d{2}$/),
   tax: z.string().regex(/^\d+\.\d{2}$/),
   shipping: z.string().regex(/^\d+\.\d{2}$/),

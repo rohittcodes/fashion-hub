@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import {
   useMutation,
   useQueryClient,
@@ -44,10 +44,10 @@ export function ProductCard(props: {
         toast.error(
           err.data?.code === "UNAUTHORIZED"
             ? "Please sign in to add items to cart"
-            : "Failed to add to cart"
+            : "Failed to add to cart",
         );
       },
-    })
+    }),
   );
 
   const handleAddToCart = () => {
@@ -76,7 +76,7 @@ export function ProductCard(props: {
           )}
         </div>
       </Link>
-      
+
       <div className="p-4">
         <div className="mb-2">
           {product.category && (
@@ -85,17 +85,17 @@ export function ProductCard(props: {
             </span>
           )}
         </div>
-        
+
         <Link href={`/products/${product.slug}`}>
           <h3 className="font-semibold text-foreground hover:text-primary">
             {product.name}
           </h3>
         </Link>
-        
-        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+
+        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
           {product.description}
         </p>
-        
+
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold text-foreground">
@@ -107,7 +107,7 @@ export function ProductCard(props: {
               </span>
             )}
           </div>
-          
+
           <Button
             size="sm"
             onClick={handleAddToCart}
@@ -116,7 +116,7 @@ export function ProductCard(props: {
             {(product.inventory ?? 0) === 0 ? "Out of Stock" : "Add to Cart"}
           </Button>
         </div>
-        
+
         {(product.inventory ?? 0) > 0 && (product.inventory ?? 0) < 10 && (
           <p className="mt-2 text-xs text-orange-600">
             Only {product.inventory} left in stock!
@@ -132,42 +132,37 @@ export function ProductCardSkeleton(props: { pulse?: boolean }) {
   const { pulse = true } = props;
   return (
     <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
-      <div
-        className={cn(
-          "aspect-square bg-muted",
-          pulse && "animate-pulse"
-        )}
-      />
+      <div className={cn("aspect-square bg-muted", pulse && "animate-pulse")} />
       <div className="p-4">
         <div
           className={cn(
             "mb-2 h-3 w-1/4 rounded bg-muted",
-            pulse && "animate-pulse"
+            pulse && "animate-pulse",
           )}
         />
         <div
           className={cn(
             "mb-1 h-5 w-3/4 rounded bg-muted",
-            pulse && "animate-pulse"
+            pulse && "animate-pulse",
           )}
         />
         <div
           className={cn(
             "mb-3 h-4 w-full rounded bg-muted",
-            pulse && "animate-pulse"
+            pulse && "animate-pulse",
           )}
         />
         <div className="flex items-center justify-between">
           <div
             className={cn(
               "h-6 w-16 rounded bg-muted",
-              pulse && "animate-pulse"
+              pulse && "animate-pulse",
             )}
           />
           <div
             className={cn(
               "h-8 w-20 rounded bg-muted",
-              pulse && "animate-pulse"
+              pulse && "animate-pulse",
             )}
           />
         </div>
@@ -189,7 +184,7 @@ export function ProductList(props: {
       categoryId: props.categoryId,
       search: props.search,
       isFeatured: props.isFeatured,
-    })
+    }),
   );
 
   if (products.length === 0) {
@@ -245,13 +240,15 @@ export function ProductSearch() {
 export function FeaturedProducts() {
   const trpc = useTRPC();
   const { data: featuredProducts } = useSuspenseQuery(
-    trpc.product.featured.queryOptions({ limit: 8 })
+    trpc.product.featured.queryOptions({ limit: 8 }),
   );
 
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="mb-8 text-3xl font-bold text-center">Featured Products</h2>
+        <h2 className="mb-8 text-center text-3xl font-bold">
+          Featured Products
+        </h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -266,7 +263,7 @@ export function FeaturedProducts() {
 export function CategoryList() {
   const trpc = useTRPC();
   const { data: categories } = useSuspenseQuery(
-    trpc.category.all.queryOptions({ withProductCount: true })
+    trpc.category.all.queryOptions({ withProductCount: true }),
   );
 
   return (
@@ -275,7 +272,7 @@ export function CategoryList() {
         <Link
           key={category.id}
           href={`/categories/${category.slug}`}
-          className="rounded-full bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+          className="rounded-full bg-muted px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
         >
           {category.name}
         </Link>

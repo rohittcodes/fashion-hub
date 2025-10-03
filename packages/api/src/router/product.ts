@@ -1,12 +1,14 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
-import { desc, eq, and, gte, lte, sql } from "@acme/db";
-import { 
-  products, 
-  categories, 
+
+import { and, desc, eq, gte, lte, sql } from "@acme/db";
+import {
+  categories,
   CreateProductSchema,
-  productReviews 
+  productReviews,
+  products,
 } from "@acme/db/schema";
+
 import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const productRouter = {
@@ -23,37 +25,48 @@ export const productRouter = {
         isFeatured: z.boolean().optional(),
         sortBy: z.enum(["name", "price", "createdAt"]).default("createdAt"),
         sortOrder: z.enum(["asc", "desc"]).default("desc"),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
-      const { limit, offset, categoryId, search, minPrice, maxPrice, isFeatured, sortBy, sortOrder } = input;
-      
+      const {
+        limit,
+        offset,
+        categoryId,
+        search,
+        minPrice,
+        maxPrice,
+        isFeatured,
+        sortBy,
+        sortOrder,
+      } = input;
+
       const conditions = [eq(products.isActive, true)];
-      
+
       if (categoryId) {
         conditions.push(eq(products.categoryId, categoryId));
       }
-      
+
       if (search) {
         conditions.push(
-          sql`(${products.name} ILIKE ${`%${search}%`} OR ${products.description} ILIKE ${`%${search}%`})`
+          sql`(${products.name} ILIKE ${`%${search}%`} OR ${products.description} ILIKE ${`%${search}%`})`,
         );
       }
-      
+
       if (minPrice) {
         conditions.push(gte(products.price, minPrice));
       }
-      
+
       if (maxPrice) {
         conditions.push(lte(products.price, maxPrice));
       }
-      
+
       if (isFeatured !== undefined) {
         conditions.push(eq(products.isFeatured, isFeatured));
       }
-      
-      const orderBy = sortOrder === "asc" ? products[sortBy] : desc(products[sortBy]);
-      
+
+      const orderBy =
+        sortOrder === "asc" ? products[sortBy] : desc(products[sortBy]);
+
       const result = await ctx.db
         .select({
           id: products.id,
@@ -80,7 +93,7 @@ export const productRouter = {
         .orderBy(orderBy)
         .limit(limit)
         .offset(offset);
-      
+
       return result;
     }),
 
@@ -94,11 +107,11 @@ export const productRouter = {
           category: true,
         },
       });
-      
+
       if (!product) {
         throw new Error("Product not found");
       }
-      
+
       // Get reviews for this product
       const reviews = await ctx.db
         .select({
@@ -116,7 +129,7 @@ export const productRouter = {
         .leftJoin(sql`user`, eq(productReviews.userId, sql`user.id`))
         .where(eq(productReviews.productId, input.id))
         .orderBy(desc(productReviews.createdAt));
-      
+
       return {
         ...product,
         reviews,
@@ -133,11 +146,11 @@ export const productRouter = {
           category: true,
         },
       });
-      
+
       if (!product) {
         throw new Error("Product not found");
       }
-      
+
       return product;
     }),
 
@@ -171,14 +184,12 @@ export const productRouter = {
   create: protectedProcedure
     .input(CreateProductSchema)
     .mutation(async ({ ctx, input }) => {
-      // Check if user has admin role (you might want to implement role-based access)
-      // For now, we'll allow any authenticated user to create products
-      
-      const [product] = await ctx.db
-        .insert(products)
-        .values(input)
-        .returning();
-      
+      if (ctx.session.user.role !== "admin") {
+        throw new Error("Unauthorized: Admin role required");
+      }
+
+      const [product] = await ctx.db.insert(products).values(input).returning();
+
       return product;
     }),
 
@@ -188,19 +199,23 @@ export const productRouter = {
       z.object({
         id: z.string(),
         data: CreateProductSchema.partial(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user.role !== "admin") {
+        throw new Error("Unauthorized: Admin role required");
+      }
+
       const [product] = await ctx.db
         .update(products)
         .set(input.data)
         .where(eq(products.id, input.id))
         .returning();
-      
+
       if (!product) {
         throw new Error("Product not found");
       }
-      
+
       return product;
     }),
 
@@ -208,15 +223,19 @@ export const productRouter = {
   delete: protectedProcedure
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user.role !== "admin") {
+        throw new Error("Unauthorized: Admin role required");
+      }
+
       const [product] = await ctx.db
         .delete(products)
         .where(eq(products.id, input))
         .returning();
-      
+
       if (!product) {
         throw new Error("Product not found");
       }
-      
+
       return product;
     }),
 
@@ -228,25 +247,25 @@ export const productRouter = {
         rating: z.number().int().min(1).max(5),
         title: z.string().max(100).optional(),
         comment: z.string().max(1000).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.session.user.id) {
         throw new Error("User not authenticated");
       }
-      
+
       // Check if user already reviewed this product
       const existingReview = await ctx.db.query.productReviews.findFirst({
         where: and(
           eq(productReviews.productId, input.productId),
-          eq(productReviews.userId, ctx.session.user.id)
+          eq(productReviews.userId, ctx.session.user.id),
         ),
       });
-      
+
       if (existingReview) {
         throw new Error("You have already reviewed this product");
       }
-      
+
       const [review] = await ctx.db
         .insert(productReviews)
         .values({
@@ -257,7 +276,7 @@ export const productRouter = {
           comment: input.comment,
         })
         .returning();
-      
+
       return review;
     }),
 
@@ -268,11 +287,11 @@ export const productRouter = {
       const product = await ctx.db.query.products.findFirst({
         where: eq(products.id, input.id),
       });
-      
+
       if (!product) {
         throw new Error("Product not found");
       }
-      
+
       // Get review statistics
       const reviewStats = await ctx.db
         .select({
@@ -281,7 +300,7 @@ export const productRouter = {
         })
         .from(productReviews)
         .where(eq(productReviews.productId, input.id));
-      
+
       return {
         product,
         reviewStats: reviewStats[0] ?? { averageRating: 0, totalReviews: 0 },

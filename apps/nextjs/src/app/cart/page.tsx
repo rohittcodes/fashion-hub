@@ -13,9 +13,12 @@ export default function CartPageRoute() {
           <div className="container mx-auto px-4 py-8">
             <h1 className="mb-8 text-3xl font-bold">Shopping Cart</h1>
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              <div className="lg:col-span-2 space-y-4">
+              <div className="space-y-4 lg:col-span-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 rounded-lg border bg-card p-4">
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 rounded-lg border bg-card p-4"
+                  >
                     <div className="h-20 w-20 animate-pulse rounded-md bg-muted" />
                     <div className="flex-1 space-y-2">
                       <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
