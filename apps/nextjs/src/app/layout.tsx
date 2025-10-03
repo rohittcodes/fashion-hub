@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 
 import { cn } from "@acme/ui";
+import { Button } from "@acme/ui/button";
 import { ThemeProvider, ThemeToggle } from "@acme/ui/theme";
 import { Toaster } from "@acme/ui/toast";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
+import { CartIcon } from "./_components/cart";
 
 import "~/app/globals.css";
 
@@ -58,7 +61,10 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TRPCReactProvider>{props.children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            <Navigation />
+            {props.children}
+          </TRPCReactProvider>
           <div className="absolute bottom-4 right-4">
             <ThemeToggle />
           </div>
@@ -66,5 +72,24 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         </ThemeProvider>
       </body>
     </html>
+  );
+}
+
+function Navigation() {
+  return (
+    <nav className="border-b bg-background">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        <Link href="/" className="text-xl font-bold">
+          Fashion Hub
+        </Link>
+        
+        <div className="flex items-center gap-4">
+          <Link href="/products">
+            <Button variant="ghost">Products</Button>
+          </Link>
+          <CartIcon />
+        </div>
+      </div>
+    </nav>
   );
 }

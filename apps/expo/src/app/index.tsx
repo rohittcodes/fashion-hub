@@ -1,108 +1,19 @@
-import { useState } from "react";
-import { Button, Pressable, Text, TextInput, View } from "react-native";
+import React from "react";
+import { Button, Text, View, FlatList, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, Stack } from "expo-router";
-import { LegendList } from "@legendapp/list";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Stack } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 
-import type { RouterOutputs } from "~/utils/api";
 import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
-
-function PostCard(props: {
-  post: RouterOutputs["post"]["all"][number];
-  onDelete: () => void;
-}) {
-  return (
-    <View className="flex flex-row rounded-lg bg-muted p-4">
-      <View className="flex-grow">
-        <Link
-          asChild
-          href={{
-            pathname: "/post/[id]",
-            params: { id: props.post.id },
-          }}
-        >
-          <Pressable className="">
-            <Text className="text-xl font-semibold text-primary">
-              {props.post.title}
-            </Text>
-            <Text className="mt-2 text-foreground">{props.post.content}</Text>
-          </Pressable>
-        </Link>
-      </View>
-      <Pressable onPress={props.onDelete}>
-        <Text className="font-bold uppercase text-primary">Delete</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function CreatePost() {
-  const queryClient = useQueryClient();
-
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-
-  const { mutate, error } = useMutation(
-    trpc.post.create.mutationOptions({
-      async onSuccess() {
-        setTitle("");
-        setContent("");
-        await queryClient.invalidateQueries(trpc.post.all.queryFilter());
-      },
-    }),
-  );
-
-  return (
-    <View className="mt-4 flex gap-2">
-      <TextInput
-        className="items-center rounded-md border border-input bg-background px-3 text-lg leading-[1.25] text-foreground"
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Title"
-      />
-      {error?.data?.zodError?.fieldErrors.title && (
-        <Text className="mb-2 text-destructive">
-          {error.data.zodError.fieldErrors.title}
-        </Text>
-      )}
-      <TextInput
-        className="items-center rounded-md border border-input bg-background px-3 text-lg leading-[1.25] text-foreground"
-        value={content}
-        onChangeText={setContent}
-        placeholder="Content"
-      />
-      {error?.data?.zodError?.fieldErrors.content && (
-        <Text className="mb-2 text-destructive">
-          {error.data.zodError.fieldErrors.content}
-        </Text>
-      )}
-      <Pressable
-        className="flex items-center rounded bg-primary p-2"
-        onPress={() => {
-          mutate({
-            title,
-            content,
-          });
-        }}
-      >
-        <Text className="text-foreground">Create</Text>
-      </Pressable>
-      {error?.data?.code === "UNAUTHORIZED" && (
-        <Text className="mt-2 text-destructive">
-          You need to be logged in to create a post
-        </Text>
-      )}
-    </View>
-  );
-}
+import { ProductCard, ProductCardSkeleton } from "~/components/ProductCard";
+import type { RouterOutputs } from "~/utils/api";
 
 function MobileAuth() {
   const { data: session } = authClient.useSession();
 
   return (
-    <>
+    <View className="mb-4">
       <Text className="pb-2 text-center text-xl font-semibold text-zinc-900">
         {session?.user.name ? `Hello, ${session.user.name}` : "Not logged in"}
       </Text>
@@ -118,53 +29,64 @@ function MobileAuth() {
         title={session ? "Sign Out" : "Sign In With Discord"}
         color={"#5B65E9"}
       />
-    </>
+    </View>
   );
 }
 
 export default function Index() {
-  const queryClient = useQueryClient();
-
-  const postQuery = useQuery(trpc.post.all.queryOptions());
-
-  const deletePostMutation = useMutation(
-    trpc.post.delete.mutationOptions({
-      onSettled: () =>
-        queryClient.invalidateQueries(trpc.post.all.queryFilter()),
-    }),
-  );
+  const featuredProductsQuery = useQuery(trpc.product.featured.queryOptions({ limit: 8 }));
 
   return (
     <SafeAreaView className="bg-background">
-      {/* Changes page title visible on the header */}
-      <Stack.Screen options={{ title: "Home Page" }} />
-      <View className="h-full w-full bg-background p-4">
-        <Text className="pb-2 text-center text-5xl font-bold text-foreground">
-          Create <Text className="text-primary">T3</Text> Turbo
-        </Text>
-
-        <MobileAuth />
-
-        <View className="py-2">
-          <Text className="font-semibold italic text-primary">
-            Press on a post
+      <Stack.Screen options={{ title: "Fashion Hub" }} />
+      <View className="h-full w-full bg-background">
+        {/* Header */}
+        <View className="p-4">
+          <Text className="pb-2 text-center text-3xl font-bold text-foreground">
+            Fashion <Text className="text-primary">Hub</Text>
           </Text>
+          <Text className="pb-4 text-center text-muted-foreground">
+            Discover the latest trends in fashion
+          </Text>
+          <MobileAuth />
         </View>
-
-        <LegendList
-          data={postQuery.data ?? []}
-          estimatedItemSize={20}
-          keyExtractor={(item) => item.id}
-          ItemSeparatorComponent={() => <View className="h-2" />}
-          renderItem={(p) => (
-            <PostCard
-              post={p.item}
-              onDelete={() => deletePostMutation.mutate(p.item.id)}
+        <View className="flex-1 px-4">
+          <Text className="mb-4 text-xl font-bold text-foreground">
+            Featured Products
+          </Text>
+          
+          {featuredProductsQuery.isLoading ? (
+            <FlatList
+              data={Array.from({ length: 4 })}
+              numColumns={2}
+              keyExtractor={(_, index) => index.toString()}
+              renderItem={() => <ProductCardSkeleton />}
+              showsVerticalScrollIndicator={false}
             />
+          ) : featuredProductsQuery.data && featuredProductsQuery.data.length > 0 ? (
+            <FlatList
+              data={featuredProductsQuery.data}
+              numColumns={2}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => <ProductCard product={item as RouterOutputs["product"]["all"][number]} />}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-muted-foreground">No featured products available</Text>
+            </View>
           )}
-        />
-
-        <CreatePost />
+        </View>
+        <View className="border-t border-gray-200 bg-white p-4">
+          <View className="flex flex-row justify-around">
+            <Pressable className="items-center">
+              <Text className="text-primary">All Products</Text>
+            </Pressable>
+            <Pressable className="items-center">
+              <Text className="text-primary">Cart</Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );
