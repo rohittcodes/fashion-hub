@@ -92,62 +92,71 @@ export const cartRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.session.user.id) {
-        throw new Error("User not authenticated");
-      }
+      try {
+        console.log("[cart.add] input:", input);
+        if (!ctx.session.user.id) {
+          throw new Error("User not authenticated");
+        }
 
-      // Check if product exists and is active
-      const product = await ctx.db.query.products.findFirst({
-        where: and(
-          eq(products.id, input.productId),
-          eq(products.isActive, true),
-        ),
-      });
+        const product = (
+          await ctx.db
+            .select({ id: products.id, inventory: products.inventory, isActive: products.isActive })
+            .from(products)
+            .where(and(eq(products.id, input.productId), eq(products.isActive, true)))
+            .limit(1)
+        )[0];
+        console.log(
+          "[cart.add] product loaded:",
+          product ? { id: product.id, inventory: product.inventory } : null,
+        );
 
-      if (!product) {
-        throw new Error("Product not found or inactive");
-      }
+        if (!product) {
+          throw new Error("Product not found or inactive");
+        }
 
-      // Check inventory
-      if (product.inventory < input.quantity) {
-        throw new Error("Insufficient inventory");
-      }
-
-      // Check if item already exists in cart
-      const existingItem = await ctx.db.query.cartItems.findFirst({
-        where: and(
-          eq(cartItems.userId, ctx.session.user.id),
-          eq(cartItems.productId, input.productId),
-        ),
-      });
-
-      if (existingItem) {
-        // Update quantity
-        const newQuantity = existingItem.quantity + input.quantity;
-
-        if (product.inventory < newQuantity) {
+        if (product.inventory < input.quantity) {
           throw new Error("Insufficient inventory");
         }
 
-        const [updatedItem] = await ctx.db
-          .update(cartItems)
-          .set({ quantity: newQuantity })
-          .where(eq(cartItems.id, existingItem.id))
-          .returning();
+        const existingItem = (
+          await ctx.db
+            .select({ id: cartItems.id, quantity: cartItems.quantity })
+            .from(cartItems)
+            .where(
+              and(
+                eq(cartItems.userId, ctx.session.user.id),
+                eq(cartItems.productId, input.productId),
+              ),
+            )
+            .limit(1)
+        )[0];
+        console.log("[cart.add] existingItem:", existingItem ? { id: existingItem.id, quantity: existingItem.quantity } : null);
 
-        return updatedItem;
-      } else {
-        // Add new item
-        const [newItem] = await ctx.db
+        if (existingItem) {
+          const newQuantity = existingItem.quantity + input.quantity;
+          if (product.inventory < newQuantity) {
+            throw new Error("Insufficient inventory");
+          }
+          await ctx.db
+            .update(cartItems)
+            .set({ quantity: newQuantity })
+            .where(eq(cartItems.id, existingItem.id));
+          console.log("[cart.add] updated existing item quantity:", newQuantity);
+          return { success: true } as const;
+        }
+
+        await ctx.db
           .insert(cartItems)
           .values({
             userId: ctx.session.user.id,
             productId: input.productId,
             quantity: input.quantity,
-          })
-          .returning();
-
-        return newItem;
+          });
+        console.log("[cart.add] inserted new item");
+        return { success: true } as const;
+      } catch (err) {
+        console.error("[cart.add] error:", err);
+        throw err;
       }
     }),
 
@@ -185,13 +194,11 @@ export const cartRouter = {
         throw new Error("Insufficient inventory");
       }
 
-      const [updatedItem] = await ctx.db
+      await ctx.db
         .update(cartItems)
         .set({ quantity: input.quantity })
-        .where(eq(cartItems.id, input.cartItemId))
-        .returning();
-
-      return updatedItem;
+        .where(eq(cartItems.id, input.cartItemId));
+      return { success: true } as const;
     }),
 
   // Remove item from cart
@@ -202,7 +209,7 @@ export const cartRouter = {
         throw new Error("User not authenticated");
       }
 
-      const [removedItem] = await ctx.db
+      const [deleted] = await ctx.db
         .delete(cartItems)
         .where(
           and(
@@ -210,13 +217,13 @@ export const cartRouter = {
             eq(cartItems.userId, ctx.session.user.id),
           ),
         )
-        .returning();
+        .returning({ id: cartItems.id });
 
-      if (!removedItem) {
+      if (!deleted) {
         throw new Error("Cart item not found");
       }
 
-      return removedItem;
+      return { success: true } as const;
     }),
 
   // Clear entire cart

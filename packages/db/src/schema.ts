@@ -1,7 +1,7 @@
-import { sql } from "drizzle-orm";
 import {
   boolean,
   decimal,
+  index,
   integer,
   pgTable,
   text,
@@ -18,10 +18,8 @@ export const categories = pgTable("categories", {
   slug: text().notNull().unique(),
   image: text(),
   isActive: boolean().notNull().default(true),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
-    () => sql`now()`,
-  ),
+  createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export const products = pgTable("products", {
@@ -39,11 +37,12 @@ export const products = pgTable("products", {
   isActive: boolean().notNull().default(true),
   isFeatured: boolean().notNull().default(false),
   tags: text().array(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
-    () => sql`now()`,
-  ),
-});
+  createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).defaultNow(),
+}, (table) => [
+  index("products_category_id_idx").on(table.categoryId),
+  index("products_is_active_idx").on(table.isActive),
+]);
 
 export const orders = pgTable("orders", {
   id: uuid().notNull().primaryKey().defaultRandom(),
@@ -58,11 +57,11 @@ export const orders = pgTable("orders", {
   shippingAddress: text().notNull(), // JSON string of address
   billingAddress: text().notNull(), // JSON string of address
   notes: text(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
-    () => sql`now()`,
-  ),
-});
+  createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).defaultNow(),
+}, (table) => [
+  index("orders_user_id_idx").on(table.userId),
+]);
 
 export const orderItems = pgTable("order_items", {
   id: uuid().notNull().primaryKey().defaultRandom(),
@@ -74,7 +73,7 @@ export const orderItems = pgTable("order_items", {
     .references(() => products.id),
   quantity: integer().notNull(),
   price: decimal({ precision: 10, scale: 2 }).notNull(), // Price at time of order
-  createdAt: timestamp().defaultNow().notNull(),
+  createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
 });
 
 export const cartItems = pgTable("cart_items", {
@@ -84,11 +83,12 @@ export const cartItems = pgTable("cart_items", {
     .notNull()
     .references(() => products.id, { onDelete: "cascade" }),
   quantity: integer().notNull(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
-    () => sql`now()`,
-  ),
-});
+  createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).defaultNow(),
+}, (table) => [
+  index("cart_items_user_id_idx").on(table.userId),
+  index("cart_items_product_id_idx").on(table.productId),
+]);
 
 export const productReviews = pgTable("product_reviews", {
   id: uuid().notNull().primaryKey().defaultRandom(),
@@ -100,10 +100,8 @@ export const productReviews = pgTable("product_reviews", {
   title: text(),
   comment: text(),
   isVerified: boolean().notNull().default(false),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp({ mode: "date", withTimezone: true }).$onUpdateFn(
-    () => sql`now()`,
-  ),
+  createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export const CreateCategorySchema = createInsertSchema(categories, {

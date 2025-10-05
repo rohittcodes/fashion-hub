@@ -1,12 +1,9 @@
 import { Suspense } from "react";
 
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
-import { AuthShowcase } from "./_components/auth-showcase";
-import {
-  CategoryList,
-  FeaturedProducts,
-  ProductCardSkeleton,
-} from "./_components/products";
+import { FeaturedProducts, ProductCardSkeleton } from "./_components/products";
+import Link from "next/link";
+import { CategoryGrid } from "./_components/products";
 
 export default function HomePage() {
   prefetch(trpc.product.featured.queryOptions({ limit: 8 }));
@@ -15,21 +12,29 @@ export default function HomePage() {
   return (
     <HydrateClient>
       <main className="min-h-screen">
-        {/* Hero Section */}
-        <section className="container mx-auto px-4 py-16">
-          <div className="flex flex-col items-center justify-center gap-4 text-center">
-            <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-              Fashion <span className="text-primary">Hub</span>
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Discover the latest trends in fashion
-            </p>
-            <AuthShowcase />
+        {/* Hero */}
+        <section className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-background to-background" />
+          <div className="container mx-auto px-4 py-20">
+            <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
+              <h1 className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-6xl">
+                Elevate Your Style with <span className="text-primary">Fashion Hub</span>
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Discover curated collections, trending pieces, and exclusive drops – all in one place.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Link href="/products" className="rounded-lg bg-primary px-6 py-3 text-primary-foreground transition-colors hover:bg-primary/90">
+                  Shop Now
+                </Link>
+                <Link href="#categories" className="rounded-lg border px-6 py-3 text-foreground transition-colors hover:bg-muted">
+                  Browse Categories
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
-
-        {/* Categories */}
-        <section className="container mx-auto px-4 py-8">
+        <section id="categories" className="container mx-auto px-4 py-12">
           <h2 className="mb-6 text-center text-2xl font-bold">
             Shop by Category
           </h2>
@@ -45,11 +50,10 @@ export default function HomePage() {
               </div>
             }
           >
-            <CategoryList />
+            <CategoryGrid />
           </Suspense>
         </section>
-
-        {/* Featured Products */}
+        {/* Featured */}
         <Suspense
           fallback={
             <section className="py-12">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FlatList, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { trpc } from "~/utils/api";
 export default function ProductsScreen() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "price" | "createdAt">("name");
 
   // Debounce search input
   React.useEffect(() => {
@@ -24,21 +25,68 @@ export default function ProductsScreen() {
     trpc.product.all.queryOptions({
       limit: 20,
       search: debouncedSearch || undefined,
+      sortBy,
     }),
   );
 
+
   return (
-    <SafeAreaView className="bg-background">
+    <SafeAreaView edges={["bottom"]} className="bg-background">
       <Stack.Screen options={{ title: "All Products" }} />
-      <View className="h-full w-full bg-background">
-        {/* Search Bar */}
-        <View className="p-4">
+      <View className="h-full w-full bg-gray-50 pb-28">
+        <View className="p-6">
+          <Text className="mb-2 text-3xl font-bold text-gray-900">
+            All Products
+          </Text>
+          <Text className="mb-6 text-gray-600">
+            Discover our complete collection
+          </Text>
+        </View>
+        <View className="px-4">
           <TextInput
-            className="rounded-md border border-gray-300 bg-white px-3 py-2"
+            className="mb-4 rounded-2xl border border-gray-200 bg-white px-4 py-4 text-lg shadow-sm"
             placeholder="Search products..."
             value={search}
             onChangeText={setSearch}
           />
+          <View className="flex flex-row gap-4 mb-4">
+            <Pressable
+              className={`rounded-xl px-4 py-3 ${
+                sortBy === "name" ? "bg-pink-500" : "bg-white"
+              }`}
+              onPress={() => setSortBy("name")}
+            >
+              <Text className={`text-sm font-semibold ${
+                sortBy === "name" ? "text-white" : "text-gray-700"
+              }`}>
+                Name
+              </Text>
+            </Pressable>
+            <Pressable
+              className={`rounded-xl px-4 py-3 ${
+                sortBy === "price" ? "bg-pink-500" : "bg-white"
+              }`}
+              onPress={() => setSortBy("price")}
+            >
+              <Text className={`text-sm font-semibold ${
+                sortBy === "price" ? "text-white" : "text-gray-700"
+              }`}>
+                Price
+              </Text>
+            </Pressable>
+            <Pressable
+              className={`rounded-xl px-4 py-3 ${
+                sortBy === "createdAt" ? "bg-pink-500" : "bg-white"
+              }`}
+              onPress={() => setSortBy("createdAt")}
+            >
+              <Text className={`text-sm font-semibold ${
+                sortBy === "createdAt" ? "text-white" : "text-gray-700"
+              }`}>
+                Newest
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Products List */}
@@ -50,6 +98,7 @@ export default function ProductsScreen() {
               keyExtractor={(_, index) => index.toString()}
               renderItem={() => <ProductCardSkeleton />}
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 54 }}
             />
           ) : productsQuery.data && productsQuery.data.length > 0 ? (
             <FlatList
@@ -58,6 +107,7 @@ export default function ProductsScreen() {
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => <ProductCard product={item} />}
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 54 }}
             />
           ) : (
             <View className="flex-1 items-center justify-center">

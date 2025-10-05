@@ -101,14 +101,35 @@ export const productRouter = {
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const product = await ctx.db.query.products.findFirst({
-        where: eq(products.id, input.id),
-        with: {
-          category: true,
-        },
-      });
+      const product = await ctx.db
+        .select({
+          id: products.id,
+          name: products.name,
+          description: products.description,
+          slug: products.slug,
+          price: products.price,
+          compareAtPrice: products.compareAtPrice,
+          sku: products.sku,
+          inventory: products.inventory,
+          weight: products.weight,
+          images: products.images,
+          isActive: products.isActive,
+          isFeatured: products.isFeatured,
+          tags: products.tags,
+          createdAt: products.createdAt,
+          updatedAt: products.updatedAt,
+          category: {
+            id: categories.id,
+            name: categories.name,
+            slug: categories.slug,
+          },
+        })
+        .from(products)
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .where(eq(products.id, input.id))
+        .limit(1);
 
-      if (!product) {
+      if (!product[0]) {
         throw new Error("Product not found");
       }
 
@@ -121,17 +142,13 @@ export const productRouter = {
           comment: productReviews.comment,
           isVerified: productReviews.isVerified,
           createdAt: productReviews.createdAt,
-          user: {
-            name: sql<string>`user.name`,
-          },
         })
         .from(productReviews)
-        .leftJoin(sql`user`, eq(productReviews.userId, sql`user.id`))
         .where(eq(productReviews.productId, input.id))
         .orderBy(desc(productReviews.createdAt));
 
       return {
-        ...product,
+        ...product[0],
         reviews,
       };
     }),
@@ -140,18 +157,39 @@ export const productRouter = {
   bySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ ctx, input }) => {
-      const product = await ctx.db.query.products.findFirst({
-        where: eq(products.slug, input.slug),
-        with: {
-          category: true,
-        },
-      });
+      const product = await ctx.db
+        .select({
+          id: products.id,
+          name: products.name,
+          description: products.description,
+          slug: products.slug,
+          price: products.price,
+          compareAtPrice: products.compareAtPrice,
+          sku: products.sku,
+          inventory: products.inventory,
+          weight: products.weight,
+          images: products.images,
+          isActive: products.isActive,
+          isFeatured: products.isFeatured,
+          tags: products.tags,
+          createdAt: products.createdAt,
+          updatedAt: products.updatedAt,
+          category: {
+            id: categories.id,
+            name: categories.name,
+            slug: categories.slug,
+          },
+        })
+        .from(products)
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .where(eq(products.slug, input.slug))
+        .limit(1);
 
-      if (!product) {
+      if (!product[0]) {
         throw new Error("Product not found");
       }
 
-      return product;
+      return product[0];
     }),
 
   // Get featured products

@@ -1,7 +1,9 @@
 import { Suspense } from "react";
+//
 
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
 import { ProductCardSkeleton } from "../../_components/products";
+import CategoryClient from "./CategoryClient";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -35,19 +37,8 @@ export default async function CategoryPage(props: CategoryPageProps) {
           </div>
         }
       >
-        <CategoryPageWrapper slug={slug} />
+        <CategoryClient slug={slug} />
       </Suspense>
     </HydrateClient>
-  );
-}
-
-function CategoryPageWrapper({ slug: _slug }: { slug: string }) {
-  // This is a placeholder that will be replaced by client-side data fetching
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center">
-        <p>Loading category...</p>
-      </div>
-    </div>
   );
 }

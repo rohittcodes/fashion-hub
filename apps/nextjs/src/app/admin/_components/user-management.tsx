@@ -141,10 +141,10 @@ export function UserManagement() {
     return (
       <div className="p-6">
         <div className="animate-pulse">
-          <div className="mb-4 h-4 w-1/4 rounded bg-gray-200"></div>
+          <div className="mb-4 h-4 w-1/4 rounded bg-slate-600"></div>
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-4 rounded bg-gray-200"></div>
+              <div key={i} className="h-4 rounded bg-slate-600"></div>
             ))}
           </div>
         </div>
@@ -155,13 +155,13 @@ export function UserManagement() {
   return (
     <div className="p-6">
       {error && (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4">
-          <p className="text-red-600">{error}</p>
+        <div className="mb-4 rounded-md border border-red-600 bg-red-900/40 p-4">
+          <p className="text-red-200">{error}</p>
         </div>
       )}
 
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
+        <h2 className="text-xl font-semibold text-white">User Management</h2>
         <Button onClick={() => setShowCreateForm(!showCreateForm)}>
           {showCreateForm ? "Cancel" : "Create User"}
         </Button>
@@ -169,8 +169,8 @@ export function UserManagement() {
 
       {/* Create User Form */}
       {showCreateForm && (
-        <div className="mb-6 rounded-lg bg-gray-50 p-4">
-          <h3 className="mb-4 text-lg font-medium">Create New User</h3>
+        <div className="mb-6 rounded-lg border border-slate-600 bg-slate-800 p-4">
+          <h3 className="mb-4 text-lg font-medium text-white">Create New User</h3>
           <form onSubmit={handleCreateUser} className="space-y-4">
             <div>
               <Label htmlFor="name">Name</Label>
@@ -215,7 +215,7 @@ export function UserManagement() {
                 onChange={(e) =>
                   setNewUser({ ...newUser, role: e.target.value })
                 }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
@@ -238,42 +238,42 @@ export function UserManagement() {
 
       {/* Users Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-slate-600">
+          <thead className="bg-slate-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
                 User
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
                 Role
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
                 Created
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
+          <tbody className="divide-y divide-slate-600 bg-slate-800">
             {filteredUsers.map((user) => (
               <tr key={user.id}>
                 <td className="whitespace-nowrap px-6 py-4">
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-white">
                       {user.name}
                     </div>
-                    <div className="text-sm text-gray-500">{user.email}</div>
+                    <div className="text-sm text-slate-400">{user.email}</div>
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4">
                   <select
                     value={user.role}
                     onChange={(e) => handleSetRole(user.id, e.target.value)}
-                    className="rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="rounded-md border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
@@ -281,16 +281,16 @@ export function UserManagement() {
                 </td>
                 <td className="whitespace-nowrap px-6 py-4">
                   {user.banned ? (
-                    <span className="inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-800">
+                    <span className="inline-flex rounded-full bg-red-900 px-2 py-1 text-xs font-semibold text-red-200">
                       Banned
                     </span>
                   ) : (
-                    <span className="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
+                    <span className="inline-flex rounded-full bg-green-900 px-2 py-1 text-xs font-semibold text-green-200">
                       Active
                     </span>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">

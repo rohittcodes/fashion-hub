@@ -21,6 +21,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       light: "./assets/icon-light.png",
       dark: "./assets/icon-dark.png",
     },
+    infoPlist: {
+      NSAppTransportSecurity: {
+        NSAllowsArbitraryLoads: true,
+      },
+    },
   },
   android: {
     package: "com.fashionhub.app",

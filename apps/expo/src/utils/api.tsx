@@ -32,14 +32,10 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
         transformer: superjson,
         url: `${getBaseUrl()}/api/trpc`,
         headers() {
-          const headers = new Map<string, string>();
-          headers.set("x-trpc-source", "expo-react");
-
           const cookies = authClient.getCookie();
-          if (cookies) {
-            headers.set("Cookie", cookies);
-          }
-          return headers;
+          const base: Record<string, string> = { "x-trpc-source": "expo-react" };
+          if (cookies) base.Cookie = cookies;
+          return base;
         },
       }),
     ],

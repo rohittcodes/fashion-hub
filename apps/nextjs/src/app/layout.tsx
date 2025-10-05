@@ -10,6 +10,7 @@ import { Toaster } from "@acme/ui/toast";
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import { CartIcon } from "./_components/cart";
+import { AuthButtons } from "./_components/auth-buttons";
 
 import "~/app/globals.css";
 
@@ -91,6 +92,7 @@ function Navigation() {
             <Button variant="ghost">Admin</Button>
           </Link>
           <CartIcon />
+          <AuthButtons />
         </div>
       </div>
     </nav>

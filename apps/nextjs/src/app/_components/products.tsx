@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,6 +15,8 @@ import { Input } from "@acme/ui/input";
 import { toast } from "@acme/ui/toast";
 
 import { useTRPC } from "~/trpc/react";
+import { useWishlist } from "~/lib/wishlist";
+import { Heart } from "lucide-react";
 
 // Product Card Component
 export function ProductCard(props: {
@@ -33,6 +35,10 @@ export function ProductCard(props: {
   const { product } = props;
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { isWishlisted, toggle } = useWishlist(product.id);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const wish = mounted && isWishlisted;
 
   const addToCart = useMutation(
     trpc.cart.add.mutationOptions({
@@ -60,7 +66,20 @@ export function ProductCard(props: {
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md">
       <Link href={`/products/${product.slug}`}>
-        <div className="aspect-square overflow-hidden bg-muted">
+        <div className="relative aspect-square overflow-hidden bg-muted">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggle(product.id);
+            }}
+            className="absolute right-2 top-2 z-10 rounded-full bg-background/90 p-2 shadow"
+            aria-label={wish ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Heart
+              className={wish ? "h-4 w-4 text-pink-600" : "h-4 w-4 text-muted-foreground"}
+              fill={wish ? "#DB2777" : "none"}
+            />
+          </button>
           {product.images && product.images.length > 0 && product.images[0] ? (
             <Image
               src={product.images[0]}
@@ -278,5 +297,45 @@ export function CategoryList() {
         </Link>
       ))}
     </div>
+  );
+}
+
+export function CategoryGrid() {
+  const trpc = useTRPC();
+  const { data: categories } = useSuspenseQuery(
+    trpc.category.all.queryOptions({ includeInactive: false, withProductCount: true }),
+  );
+
+  if (categories.length === 0) {
+    return (
+      <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+        No categories available.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      {categories.slice(0, 12).map((c) => (
+        <Link key={c.id} href={`/categories/${c.slug}`} className="group overflow-hidden rounded-lg border bg-card shadow-sm transition hover:shadow-md">
+          <div className="aspect-square overflow-hidden bg-muted">
+            <ImageWrapper src={c.image} alt={c.name} />
+          </div>
+          <div className="p-3">
+            <p className="line-clamp-1 font-medium">{c.name}</p>
+            {"productCount" in (c as Record<string, unknown>) && typeof (c as Record<string, unknown>).productCount === "number" ? (
+              <p className="text-xs text-muted-foreground">{(c as unknown as { productCount: number }).productCount} products</p>
+            ) : null}
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function ImageWrapper({ alt }: { src?: string | null; alt: string }) {
+  const url = `https://placehold.co/600x600/fce7f3/9d174d.png?text=${encodeURIComponent(alt)}`;
+  return (
+    <Image src={url} alt={alt} className="h-full w-full object-cover transition-transform group-hover:scale-105" width={600} height={600} />
   );
 }

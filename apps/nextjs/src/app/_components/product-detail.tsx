@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Heart, Share2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { cn } from "@acme/ui";
@@ -10,6 +11,7 @@ import { Input } from "@acme/ui/input";
 import { toast } from "@acme/ui/toast";
 
 import { useTRPC } from "~/trpc/react";
+import { useWishlist } from "~/lib/wishlist";
 
 // Product Detail Component
 export function ProductDetail(props: {
@@ -23,7 +25,7 @@ export function ProductDetail(props: {
     images: string[] | null;
     category: { name: string } | null;
     sku: string | null;
-    weight: number | null;
+    weight: number | string | null;
     tags: string[] | null;
     reviews: {
       id: string;
@@ -31,7 +33,7 @@ export function ProductDetail(props: {
       title: string | null;
       comment: string | null;
       createdAt: Date;
-      user: { name: string };
+      user?: { name: string };
     }[];
   };
 }) {
@@ -40,6 +42,7 @@ export function ProductDetail(props: {
   const queryClient = useQueryClient();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const { isWishlisted, toggle } = useWishlist(product.id);
 
   const addToCart = useMutation(
     trpc.cart.add.mutationOptions({
@@ -104,7 +107,23 @@ export function ProductDetail(props: {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+          <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+            <div className="absolute right-3 top-3 z-10 flex gap-2">
+              <button
+                onClick={() => toggle(product.id)}
+                className="rounded-full bg-background/90 p-2 shadow"
+                aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                {isWishlisted ? (
+                  <Heart className="h-4 w-4 text-pink-600" fill="#DB2777" />
+                ) : (
+                  <Heart className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+              <button className="rounded-full bg-background/90 p-2 shadow" aria-label="Share">
+                <Share2 className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
             {images.length > 0 && images[selectedImageIndex] ? (
               <Image
                 src={images[selectedImageIndex]}
@@ -180,7 +199,7 @@ export function ProductDetail(props: {
           </div>
 
           <div className="space-y-2">
-            <p className="text-foreground">{product.description}</p>
+            <p className="text-muted-foreground">{product.description}</p>
 
             {product.sku && (
               <p className="text-sm text-muted-foreground">
@@ -293,7 +312,7 @@ export function ProductReviews(props: {
     title: string | null;
     comment: string | null;
     createdAt: Date;
-    user: { name: string };
+    user?: { name: string };
   }[];
   onAddReview: (rating: number, title?: string, comment?: string) => void;
 }) {
@@ -402,7 +421,7 @@ export function ProductReviews(props: {
             <div key={review.id} className="rounded-lg border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{review.user.name}</span>
+                  <span className="font-medium">{review.user?.name ?? "Anonymous"}</span>
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <span

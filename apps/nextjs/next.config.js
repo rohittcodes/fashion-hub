@@ -15,6 +15,18 @@ const config = {
     "@acme/ui",
     "@acme/validators",
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      }
+    ],
+  },
 
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },

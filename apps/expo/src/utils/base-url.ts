@@ -16,11 +16,16 @@ export const getBaseUrl = () => {
   const debuggerHost = Constants.expoConfig?.hostUri;
   const localhost = debuggerHost?.split(":")[0];
 
+  // Check for environment variable first
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  
   if (!localhost) {
-    // return "https://turbo.t3.gg";
     throw new Error(
-      "Failed to get localhost. Please point to your production server.",
+      "Failed to get localhost. Please set EXPO_PUBLIC_API_URL environment variable or check your network connection.",
     );
   }
+  
   return `http://${localhost}:3000`;
 };

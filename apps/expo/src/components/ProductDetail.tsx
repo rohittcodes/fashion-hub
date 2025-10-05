@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import {
   Alert,
-  Image,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
+  Platform,
+  ToastAndroid,
 } from "react-native";
+import { Image as ExpoImage } from "expo-image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Ionicons } from "@expo/vector-icons";
+import { useWishlist } from "~/utils/wishlist-store";
+import { useRouter } from "expo-router";
+import { authClient } from "~/utils/auth";
 
 import type { RouterOutputs } from "~/utils/api";
 import { trpc } from "~/utils/api";
@@ -18,23 +24,33 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ product }: ProductDetailProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const { isWishlisted, toggle } = useWishlist(product.id);
+  const { data: session } = authClient.useSession();
 
   const addToCart = useMutation(
     trpc.cart.add.mutationOptions({
       onSuccess: () => {
-        Alert.alert("Success", "Added to cart!");
+        if (Platform.OS === "android") {
+          ToastAndroid.show("Added to cart", ToastAndroid.SHORT);
+        } else {
+          Alert.alert("Added to cart");
+        }
         void queryClient.invalidateQueries(trpc.cart.getCount.queryFilter());
       },
       onError: (err) => {
-        Alert.alert(
-          "Error",
+        const message =
           err.data?.code === "UNAUTHORIZED"
             ? "Please sign in to add items to cart"
-            : "Failed to add to cart",
-        );
+            : "Failed to add to cart";
+        if (Platform.OS === "android") {
+          ToastAndroid.show(message, ToastAndroid.SHORT);
+        } else {
+          Alert.alert(message);
+        }
       },
     }),
   );
@@ -42,11 +58,19 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const addReview = useMutation(
     trpc.product.addReview.mutationOptions({
       onSuccess: () => {
-        Alert.alert("Success", "Review added successfully!");
+        if (Platform.OS === "android") {
+          ToastAndroid.show("Review added", ToastAndroid.SHORT);
+        } else {
+          Alert.alert("Review added");
+        }
         void queryClient.invalidateQueries(trpc.product.byId.queryFilter());
       },
       onError: () => {
-        Alert.alert("Error", "Failed to add review");
+        if (Platform.OS === "android") {
+          ToastAndroid.show("Failed to add review", ToastAndroid.SHORT);
+        } else {
+          Alert.alert("Failed to add review");
+        }
       },
     }),
   );
@@ -61,6 +85,20 @@ export function ProductDetail({ product }: ProductDetailProps) {
       productId: product.id,
       quantity,
     });
+  };
+
+  const handleBuyNow = async () => {
+    if (!session) {
+      router.push("/onboarding");
+      return;
+    }
+    if (product.inventory === 0) return;
+    try {
+      await addToCart.mutateAsync({ productId: product.id, quantity });
+      router.push("/cart");
+    } catch {
+      // error already alerted in mutation onError
+    }
   };
 
   const handleAddReview = (
@@ -82,21 +120,58 @@ export function ProductDetail({ product }: ProductDetailProps) {
     parseFloat(product.compareAtPrice) > parseFloat(product.price);
 
   return (
-    <ScrollView className="flex-1 bg-white">
+    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 54 }}>
       <View className="p-4">
-        {/* Product Images */}
         <View className="mb-6">
-          <View className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+          <View className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg">
+            <View className="absolute top-4 right-4 z-10">
+              <Pressable
+                onPress={() => void toggle(product.id)}
+                className="rounded-full bg-white/90 p-3 shadow-lg"
+              >
+                <Ionicons
+                  name={isWishlisted ? "heart" : "heart-outline"}
+                  size={24}
+                  color={isWishlisted ? "#EC4899" : "#6B7280"}
+                />
+              </Pressable>
+            </View>
+            <View className="absolute top-4 left-4 z-10">
+              <Pressable className="rounded-full bg-white/90 p-3 shadow-lg">
+                <Ionicons name="share-outline" size={24} color="#6B7280" />
+              </Pressable>
+            </View>
+
             {images.length > 0 ? (
-              <Image
-                source={{ uri: images[selectedImageIndex] }}
-                className="h-full w-full"
-                resizeMode="cover"
+              <ExpoImage
+                source={{ 
+                  uri: images[selectedImageIndex]?.startsWith('http') 
+                    ? images[selectedImageIndex] 
+                    : `https://picsum.photos/400/400?random=${product.id.slice(-3)}`
+                }}
+                contentFit="cover"
+                style={{ width: "100%", height: "100%" }}
+                transition={300}
+                allowDownscaling
+                recyclingKey={`${product.id}-${selectedImageIndex}`}
+                onError={(e: unknown) => {
+                  console.log("Product detail image error:", e);
+                }}
               />
             ) : (
-              <View className="flex h-full w-full items-center justify-center">
-                <Text className="text-gray-400">No Image Available</Text>
-              </View>
+              <ExpoImage
+                source={{ 
+                  uri: `https://picsum.photos/400/400?random=${product.id.slice(-3)}`
+                }}
+                contentFit="cover"
+                style={{ width: "100%", height: "100%" }}
+                transition={300}
+                allowDownscaling
+                recyclingKey={`${product.id}-fallback`}
+                onError={(e: unknown) => {
+                  console.log("Product detail fallback image error:", e);
+                }}
+              />
             )}
           </View>
 
@@ -110,16 +185,23 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <Pressable
                   key={index}
                   onPress={() => setSelectedImageIndex(index)}
-                  className={`mr-2 h-20 w-20 overflow-hidden rounded-md border-2 ${
+                  className={`mr-3 h-20 w-20 overflow-hidden rounded-xl border-2 ${
                     selectedImageIndex === index
-                      ? "border-blue-500"
+                      ? "border-pink-500"
                       : "border-gray-200"
                   }`}
                 >
-                  <Image
-                    source={{ uri: image }}
-                    className="h-full w-full"
-                    resizeMode="cover"
+                  <ExpoImage
+                    source={{ 
+                      uri: image.startsWith('http') 
+                        ? image 
+                        : `https://picsum.photos/80/80?random=${product.id.slice(-3)}`
+                    }}
+                    contentFit="cover"
+                    style={{ width: "100%", height: "100%" }}
+                    transition={200}
+                    allowDownscaling
+                    recyclingKey={`${product.id}-thumb-${index}`}
                   />
                 </Pressable>
               ))}
@@ -129,21 +211,31 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
         {/* Product Info */}
         <View className="mb-6">
-          <Text className="mt-1 text-2xl font-bold text-gray-900">
+          <Text className="mt-1 text-3xl font-bold text-gray-900">
             {product.name}
           </Text>
 
-          <View className="mt-3 flex flex-row items-center">
-            <Text className="text-2xl font-bold text-gray-900">
+          {/* Rating */}
+          <View className="mt-2 flex-row items-center">
+            <Ionicons name="star" size={16} color="#FCD34D" />
+            <Ionicons name="star" size={16} color="#FCD34D" />
+            <Ionicons name="star" size={16} color="#FCD34D" />
+            <Ionicons name="star" size={16} color="#FCD34D" />
+            <Ionicons name="star" size={16} color="#FCD34D" />
+            <Text className="ml-2 text-sm text-gray-600">(4.5) • 128 reviews</Text>
+          </View>
+
+          <View className="mt-4 flex flex-row items-center">
+            <Text className="text-3xl font-bold text-gray-900">
               ${product.price}
             </Text>
             {hasDiscount && (
               <>
-                <Text className="ml-2 text-lg text-gray-500 line-through">
+                <Text className="ml-3 text-xl text-gray-500 line-through">
                   ${product.compareAtPrice}
                 </Text>
-                <View className="ml-2 rounded bg-red-100 px-2 py-1">
-                  <Text className="text-sm font-medium text-red-800">
+                <View className="ml-3 rounded-full bg-red-500 px-3 py-1 shadow-sm">
+                  <Text className="text-sm font-bold text-white">
                     Save $
                     {(
                       parseFloat(product.compareAtPrice ?? "0") -
@@ -155,90 +247,122 @@ export function ProductDetail({ product }: ProductDetailProps) {
             )}
           </View>
 
-          <View className="mt-4">
-            <Text className="text-gray-700">{product.description}</Text>
+          <View className="mt-6">
+            <Text className="text-base text-gray-700 leading-6">{product.description}</Text>
 
-            {product.sku && (
-              <Text className="mt-2 text-sm text-gray-500">
-                SKU: {product.sku}
-              </Text>
-            )}
-
-            <Text className="mt-1 text-sm text-gray-500">
-              Weight: {product.weight ? `${product.weight} lbs` : "N/A"}
-            </Text>
+            <View className="mt-4 flex-row flex-wrap">
+              {product.sku && (
+                <View className="mr-4 mb-2 rounded-lg bg-gray-100 px-3 py-2">
+                  <Text className="text-sm font-medium text-gray-700">
+                    SKU: {product.sku}
+                  </Text>
+                </View>
+              )}
+              <View className="mr-4 mb-2 rounded-lg bg-gray-100 px-3 py-2">
+                <Text className="text-sm font-medium text-gray-700">
+                  Weight: {product.weight ? `${product.weight} lbs` : "N/A"}
+                </Text>
+              </View>
+            </View>
           </View>
-
-          {/* Inventory Status */}
           <View className="mt-4">
             {product.inventory > 0 ? (
-              <Text className="text-sm text-green-600">
-                {product.inventory > 10
-                  ? "In Stock"
-                  : `Only ${product.inventory} left in stock!`}
-              </Text>
+              <View className="flex-row items-center">
+                <View className="rounded-full bg-green-100 px-3 py-1">
+                  <Text className="text-sm font-semibold text-green-800">
+                    {product.inventory > 10
+                      ? "✓ In Stock"
+                      : `Only ${product.inventory} left!`}
+                  </Text>
+                </View>
+                {product.inventory <= 10 && (
+                  <Text className="ml-2 text-xs text-orange-600 font-medium">
+                    Hurry! Limited stock
+                  </Text>
+                )}
+              </View>
             ) : (
-              <Text className="text-sm text-red-600">Out of Stock</Text>
+              <View className="rounded-full bg-red-100 px-3 py-1">
+                <Text className="text-sm font-semibold text-red-800">Out of Stock</Text>
+              </View>
             )}
           </View>
         </View>
-
-        {/* Add to Cart */}
         <View className="mb-6">
-          <View className="mb-4 flex flex-row items-center">
-            <Text className="mr-4 text-base font-medium">Quantity:</Text>
-            <View className="flex flex-row items-center">
+          <View className="mb-6 flex flex-row items-center">
+            <Text className="mr-4 text-base font-semibold text-gray-700">Quantity:</Text>
+            <View className="flex flex-row items-center rounded-xl border border-gray-200 bg-white">
               <Pressable
-                className="h-10 w-10 items-center justify-center rounded-md border border-gray-300"
+                className="h-12 w-12 items-center justify-center rounded-l-xl border-r border-gray-200"
                 onPress={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1}
               >
-                <Text className="text-lg font-medium text-gray-600">-</Text>
+                <Text className="text-xl font-bold text-gray-600">-</Text>
               </Pressable>
               <TextInput
                 value={quantity.toString()}
                 onChangeText={(text) => setQuantity(parseInt(text) || 1)}
                 keyboardType="numeric"
-                className="mx-3 w-16 rounded-md border border-gray-300 px-3 py-2 text-center"
+                className="w-16 px-3 py-3 text-center text-lg font-semibold"
               />
               <Pressable
-                className="h-10 w-10 items-center justify-center rounded-md border border-gray-300"
+                className="h-12 w-12 items-center justify-center rounded-r-xl border-l border-gray-200"
                 onPress={() =>
                   setQuantity(Math.min(product.inventory, quantity + 1))
                 }
                 disabled={quantity >= product.inventory}
               >
-                <Text className="text-lg font-medium text-gray-600">+</Text>
+                <Text className="text-xl font-bold text-gray-600">+</Text>
               </Pressable>
             </View>
           </View>
 
-          <Pressable
-            className={`w-full rounded-md py-4 ${
-              product.inventory === 0 || addToCart.isPending
-                ? "bg-gray-300"
-                : "bg-blue-600"
-            }`}
-            onPress={handleAddToCart}
-            disabled={addToCart.isPending || product.inventory === 0}
-          >
-            <Text
-              className={`text-center text-base font-medium ${
+          <View className="flex-row gap-4">
+            <Pressable
+              className={`flex-1 rounded-2xl py-4 ${
                 product.inventory === 0 || addToCart.isPending
-                  ? "text-gray-500"
-                  : "text-white"
+                  ? "bg-gray-300"
+                  : "bg-gradient-to-r from-pink-600 to-purple-600"
               }`}
+              onPress={handleBuyNow}
+              disabled={addToCart.isPending || product.inventory === 0}
             >
-              {product.inventory === 0
-                ? "Out of Stock"
-                : addToCart.isPending
-                  ? "Adding..."
-                  : "Add to Cart"}
-            </Text>
-          </Pressable>
-        </View>
+              <Text
+                className={`text-center text-lg font-bold ${
+                  product.inventory === 0 || addToCart.isPending
+                    ? "text-gray-600"
+                    : "text-white"
+                }`}
+              >
+                {addToCart.isPending ? "Processing..." : "Buy Now"}
+              </Text>
+            </Pressable>
 
-        {/* Tags */}
+            <Pressable
+              className={`flex-1 rounded-2xl border-2 px-6 py-4 ${
+                product.inventory === 0 || addToCart.isPending
+                  ? "border-gray-300"
+                  : "border-pink-600"
+              }`}
+              onPress={handleAddToCart}
+              disabled={addToCart.isPending || product.inventory === 0}
+            >
+              <Text
+                className={`text-center text-lg font-bold ${
+                  product.inventory === 0 || addToCart.isPending
+                    ? "text-gray-500"
+                    : "text-pink-600"
+                }`}
+              >
+                {product.inventory === 0
+                  ? "Out of Stock"
+                  : addToCart.isPending
+                    ? "Adding..."
+                    : "Add to Cart"}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
         {product.tags && product.tags.length > 0 && (
           <View className="mb-6">
             <Text className="mb-2 text-base font-semibold text-gray-900">
@@ -306,15 +430,13 @@ function ProductReviews({
           <Text className="text-sm font-medium text-white">Write a Review</Text>
         </Pressable>
       </View>
-
-      {/* Review Form */}
       {showReviewForm && (
         <View className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <Text className="mb-4 text-lg font-semibold text-gray-900">
             Write a Review
           </Text>
 
-          <View className="space-y-4">
+          <View className="gap-4">
             <View>
               <Text className="mb-2 text-sm font-medium text-gray-700">
                 Rating
@@ -364,7 +486,7 @@ function ProductReviews({
               />
             </View>
 
-            <View className="flex flex-row space-x-2">
+            <View className="flex flex-row gap-2">
               <Pressable
                 className="flex-1 rounded-md bg-blue-600 py-2"
                 onPress={handleSubmitReview}
@@ -385,8 +507,6 @@ function ProductReviews({
           </View>
         </View>
       )}
-
-      {/* Reviews List */}
       <View>
         {reviews.length === 0 ? (
           <Text className="text-gray-500">
@@ -398,11 +518,11 @@ function ProductReviews({
               key={review.id}
               className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
             >
-              <View className="mb-2 flex flex-row items-center justify-between">
-                <View className="flex flex-row items-center">
-                  <Text className="font-medium text-gray-900">
-                    {review.user.name}
-                  </Text>
+                <View className="mb-2 flex flex-row items-center justify-between">
+                  <View className="flex flex-row items-center">
+                    <Text className="font-medium text-gray-900">
+                      Anonymous User
+                    </Text>
                   <View className="ml-2 flex flex-row">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Text

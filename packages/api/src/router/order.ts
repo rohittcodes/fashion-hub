@@ -161,6 +161,14 @@ export const orderRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      try {
+      console.log("[order.createFromCart] input:", {
+        shippingAddress: input.shippingAddress,
+        billingAddress: input.billingAddress,
+        hasNotes: Boolean(input.notes && input.notes.length > 0),
+        taxRate: input.taxRate,
+        shippingCost: input.shippingCost,
+      });
       if (!ctx.session.user.id) {
         throw new Error("User not authenticated");
       }
@@ -185,6 +193,8 @@ export const orderRouter = {
       if (cartItemsWithProducts.length === 0) {
         throw new Error("Cart is empty");
       }
+
+      console.log("[order.createFromCart] cart items:", cartItemsWithProducts.length);
 
       // Validate cart items
       const invalidItems = cartItemsWithProducts.filter((item) => {
@@ -213,6 +223,13 @@ export const orderRouter = {
       const shipping = input.shippingCost;
       const total = subtotal + tax + shipping;
 
+      console.log("[order.createFromCart] totals:", {
+        subtotal,
+        tax,
+        shipping,
+        total,
+      });
+
       // Create order
       const orderNumber = generateOrderNumber();
       const [order] = await ctx.db
@@ -230,13 +247,16 @@ export const orderRouter = {
           billingAddress: input.billingAddress,
           notes: input.notes,
         })
-        .returning();
+        .returning({ id: orders.id, orderNumber: orders.orderNumber });
 
       if (!order) {
         throw new Error("Failed to create order");
       }
 
+      console.log("[order.createFromCart] order created:", order);
+
       // Create order items and update inventory
+      console.log("[order.createFromCart] preparing order items insert...");
       const orderItemsData = cartItemsWithProducts.map((item) => {
         const product = item.product as { id: string; price: string };
         return {
@@ -246,12 +266,33 @@ export const orderRouter = {
           price: product.price,
         };
       });
-
-      await ctx.db.insert(orderItems).values(orderItemsData);
+      console.log("[order.createFromCart] inserting order items:", orderItemsData.length);
+      if (orderItemsData.length > 0) {
+        const sample = orderItemsData[0] as unknown as Record<string, unknown>;
+        console.log("[order.createFromCart] sample order item:", sample);
+        console.log(
+          "[order.createFromCart] sample types:",
+          {
+            orderId: typeof sample.orderId,
+            productId: typeof sample.productId,
+            quantity: typeof sample.quantity,
+            price: typeof sample.price,
+          },
+        );
+      }
+      try {
+        await ctx.db.insert(orderItems).values(orderItemsData);
+      } catch (e) {
+        console.error("[order.createFromCart] insert orderItems failed:", e);
+        throw e;
+      }
+      console.log("[order.createFromCart] order items inserted");
 
       // Update product inventory
+      console.log("[order.createFromCart] updating inventory for items:", cartItemsWithProducts.length);
       for (const item of cartItemsWithProducts) {
         const product = item.product as { id: string };
+        console.log("[order.createFromCart] decrement inventory for product:", product.id, "by", item.quantity);
         await ctx.db
           .update(products)
           .set({
@@ -259,13 +300,25 @@ export const orderRouter = {
           })
           .where(eq(products.id, product.id));
       }
+      console.log("[order.createFromCart] inventory updated");
 
       // Clear cart
+      console.log("[order.createFromCart] clearing cart for user:", ctx.session.user.id);
       await ctx.db
         .delete(cartItems)
         .where(eq(cartItems.userId, ctx.session.user.id));
+      console.log("[order.createFromCart] cart cleared");
 
-      return order;
+      const payload: { id: string; orderNumber: string } = {
+        id: order.id,
+        orderNumber: order.orderNumber,
+      };
+      console.log("[order.createFromCart] success payload:", payload);
+      return payload;
+      } catch (err) {
+        console.error("[order.createFromCart] error:", err);
+        throw err;
+      }
     }),
 
   // Create order directly (admin or for specific use cases)
@@ -287,6 +340,7 @@ export const orderRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      try {
       // Get products and validate
       const productsData = await ctx.db
         .select()
@@ -329,7 +383,7 @@ export const orderRouter = {
           billingAddress: input.billingAddress,
           notes: input.notes,
         })
-        .returning();
+        .returning({ id: orders.id, orderNumber: orders.orderNumber });
 
       if (!order) {
         throw new Error("Failed to create order");
@@ -351,7 +405,15 @@ export const orderRouter = {
 
       await ctx.db.insert(orderItems).values(orderItemsData);
 
-      return order;
+      const payload: { id: string; orderNumber: string } = {
+        id: order.id,
+        orderNumber: order.orderNumber,
+      };
+      return payload;
+      } catch (err) {
+        console.error("[order.create] error:", err);
+        throw err;
+      }
     }),
 
   // Update order status (admin only)

@@ -202,9 +202,11 @@ export function CartSummary(props: { totals: CartTotalsType }) {
         </div>
       </div>
 
-      <Button className="mt-4 w-full" size="lg">
-        Proceed to Checkout
-      </Button>
+      <Link href="/checkout">
+        <Button className="mt-4 w-full" size="lg">
+          Proceed to Checkout
+        </Button>
+      </Link>
     </div>
   );
 }
@@ -275,14 +277,13 @@ export function CartIcon() {
     enabled: !!session?.user,
   });
 
-  // Always render the same structure to avoid hydration mismatch
   return (
-    <Link href="/cart" className="relative">
-      <Button variant="ghost" size="sm">
+    <Link href="/cart">
+      <Button variant="ghost">
         Cart ({cartCount?.totalQuantity ?? 0})
       </Button>
       {(cartCount?.totalQuantity ?? 0) > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+        <span className="">
           {cartCount?.totalQuantity ?? 0}
         </span>
       )}
