@@ -4,6 +4,7 @@ import { HydrateClient, prefetch, trpc } from "~/trpc/server";
 import { FeaturedProducts, ProductCardSkeleton } from "./_components/products";
 import Link from "next/link";
 import { CategoryGrid } from "./_components/products";
+import { ForYouSection, TrendingSection } from "./_components/recommendations";
 
 export default function HomePage() {
   prefetch(trpc.product.featured.queryOptions({ limit: 8 }));
@@ -72,6 +73,13 @@ export default function HomePage() {
         >
           <FeaturedProducts />
         </Suspense>
+        {/* Recommendations */}
+        <section className="py-4">
+          <div className="container mx-auto px-4">
+            <ForYouSection />
+            <TrendingSection />
+          </div>
+        </section>
       </main>
     </HydrateClient>
   );

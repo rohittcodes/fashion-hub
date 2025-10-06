@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__rube__RUBE_SEARCH_TOOLS"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
