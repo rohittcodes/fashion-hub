@@ -170,7 +170,9 @@ export function UserManagement() {
       {/* Create User Form */}
       {showCreateForm && (
         <div className="mb-6 rounded-lg border border-slate-600 bg-slate-800 p-4">
-          <h3 className="mb-4 text-lg font-medium text-white">Create New User</h3>
+          <h3 className="mb-4 text-lg font-medium text-white">
+            Create New User
+          </h3>
           <form onSubmit={handleCreateUser} className="space-y-4">
             <div>
               <Label htmlFor="name">Name</Label>

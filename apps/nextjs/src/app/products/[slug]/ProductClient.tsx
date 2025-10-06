@@ -19,7 +19,11 @@ export default function ProductClient({ slug }: { slug: string }) {
         <p className="text-muted-foreground">{basic.description}</p>
       ) : null}
       <div className="mt-6">
-        <Suspense fallback={<div className="text-muted-foreground">Loading details…</div>}>
+        <Suspense
+          fallback={
+            <div className="text-muted-foreground">Loading details…</div>
+          }
+        >
           <DetailQuery id={basic.id} />
         </Suspense>
       </div>

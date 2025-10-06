@@ -59,4 +59,3 @@ export interface RecommendationResult {
   productId: string;
   score: number;
 }
-

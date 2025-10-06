@@ -24,7 +24,7 @@ const config = {
       {
         protocol: "https",
         hostname: "placehold.co",
-      }
+      },
     ],
   },
 

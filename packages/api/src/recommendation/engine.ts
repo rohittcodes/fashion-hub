@@ -67,7 +67,9 @@ export class RecommendationEngine {
 
     const candidates = new Map<string, RecommendationCandidate>();
 
-    const upsertCandidate = (productId: string): RecommendationCandidate | undefined => {
+    const upsertCandidate = (
+      productId: string,
+    ): RecommendationCandidate | undefined => {
       if (excludeProductIds?.has(productId)) return undefined;
       const existing = candidates.get(productId);
       if (existing) {
@@ -100,7 +102,8 @@ export class RecommendationEngine {
       for (const signal of trending) {
         const candidate = upsertCandidate(signal.productId);
         if (candidate) {
-          candidate.signals.trending = (candidate.signals.trending ?? 0) + signal.score;
+          candidate.signals.trending =
+            (candidate.signals.trending ?? 0) + signal.score;
         }
       }
     }
@@ -120,11 +123,13 @@ export class RecommendationEngine {
       const collaborativeScore =
         candidate.signals.collaborative * weightings.collaborative;
       const contentScore = candidate.signals.content * weightings.content;
-      const trendingScore = (candidate.signals.trending ?? 0) * weightings.trending;
+      const trendingScore =
+        (candidate.signals.trending ?? 0) * weightings.trending;
       const personalScore =
         (personalScores.get(candidate.productId) ?? 0) * weightings.view;
 
-      const totalScore = collaborativeScore + contentScore + trendingScore + personalScore;
+      const totalScore =
+        collaborativeScore + contentScore + trendingScore + personalScore;
       if (totalScore <= 0) continue;
 
       results.push({
@@ -133,9 +138,6 @@ export class RecommendationEngine {
       });
     }
 
-    return results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    return results.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 }
-

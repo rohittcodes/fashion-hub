@@ -1,9 +1,8 @@
 import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Button, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "react-native";
 
 import { CartItem, CartSummary } from "~/components/CartItem";
 import { trpc } from "~/utils/api";
@@ -26,11 +25,25 @@ export default function CartScreen() {
     enabled: !!session,
     isLoading: cartQuery.isLoading,
     isFetching: cartQuery.isFetching,
-    error: cartQuery.error ? (cartQuery.error as unknown as { message?: string; shape?: { message?: string } }).message ?? (cartQuery.error as unknown as { shape?: { message?: string } }).shape?.message ?? "unknown" : null,
+    error: cartQuery.error
+      ? ((
+          cartQuery.error as unknown as {
+            message?: string;
+            shape?: { message?: string };
+          }
+        ).message ??
+        (cartQuery.error as unknown as { shape?: { message?: string } }).shape
+          ?.message ??
+        "unknown")
+      : null,
   });
   if (cartQuery.data) {
     console.log("[Cart] data:", {
-      items: cartQuery.data.items.map((i) => ({ id: i.id, pid: i.product.id, qty: i.quantity })),
+      items: cartQuery.data.items.map((i) => ({
+        id: i.id,
+        pid: i.product.id,
+        qty: i.quantity,
+      })),
       totals: cartQuery.data.totals,
     });
   }
@@ -41,8 +54,12 @@ export default function CartScreen() {
       <SafeAreaView edges={["bottom"]} className="bg-background">
         <Stack.Screen options={{ title: "Shopping Cart" }} />
         <View className="flex-1 items-center justify-center p-6">
-          <Text className="mb-3 text-center text-2xl font-bold text-foreground">You're not signed in</Text>
-          <Text className="mb-6 text-center text-muted-foreground">Sign in to view your cart.</Text>
+          <Text className="mb-3 text-center text-2xl font-bold text-foreground">
+            You're not signed in
+          </Text>
+          <Text className="mb-6 text-center text-muted-foreground">
+            Sign in to view your cart.
+          </Text>
           <Button
             title="Go to Onboarding"
             color="#EC4899"
@@ -99,7 +116,10 @@ export default function CartScreen() {
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-background">
       <Stack.Screen options={{ title: "Shopping Cart" }} />
-      <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 180, paddingTop: 8 }}>
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: 8 }}
+      >
         <View className="p-4">
           <View className="mb-6">
             <Text className="text-2xl font-bold text-foreground">

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { Button } from "@acme/ui/button";
@@ -31,7 +31,9 @@ export function AuthButtons() {
           <Button variant="ghost">Profile</Button>
         </Link>
         <form action="/api/auth/sign-out" method="post">
-          <Button variant="outline" type="submit">Sign out</Button>
+          <Button variant="outline" type="submit">
+            Sign out
+          </Button>
         </form>
       </>
     );
@@ -39,6 +41,3 @@ export function AuthButtons() {
 
   return <SignInButton />;
 }
-
-
-

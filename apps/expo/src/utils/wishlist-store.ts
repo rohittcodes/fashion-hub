@@ -1,5 +1,5 @@
-import * as SecureStore from "expo-secure-store";
 import { useSyncExternalStore } from "react";
+import * as SecureStore from "expo-secure-store";
 
 const WISHLIST_KEY = "wishlist:default";
 
@@ -111,5 +111,3 @@ export function useWishlist(productId?: string) {
     ids,
   } as const;
 }
-
-

@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { RouterInputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import { Input } from "@acme/ui/input";
 import { Label } from "@acme/ui/label";
 import { Textarea } from "@acme/ui/textarea";
 
 import { useTRPC } from "~/trpc/react";
-import type { RouterInputs } from "@acme/api";
 
 interface CategoryRow {
   id: string;
@@ -51,13 +51,15 @@ export function CategoryManagement() {
 
   const deleteCategory = useMutation(
     trpc.category.delete.mutationOptions({
-      onSuccess: () => void queryClient.invalidateQueries(trpc.category.all.queryFilter()),
+      onSuccess: () =>
+        void queryClient.invalidateQueries(trpc.category.all.queryFilter()),
     }),
   );
 
   const toggleActive = useMutation(
     trpc.category.toggleActive.mutationOptions({
-      onSuccess: () => void queryClient.invalidateQueries(trpc.category.all.queryFilter()),
+      onSuccess: () =>
+        void queryClient.invalidateQueries(trpc.category.all.queryFilter()),
     }),
   );
 
@@ -118,7 +120,9 @@ export function CategoryManagement() {
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">Category Management</h2>
+        <h2 className="text-xl font-semibold text-white">
+          Category Management
+        </h2>
         <div className="flex items-center gap-3">
           <input
             placeholder="Search categories..."
@@ -134,7 +138,9 @@ export function CategoryManagement() {
 
       {showCreateForm && (
         <div className="mb-6 rounded-lg border border-slate-600 bg-slate-700 p-4">
-          <h3 className="mb-4 text-lg font-medium text-white">Create New Category</h3>
+          <h3 className="mb-4 text-lg font-medium text-white">
+            Create New Category
+          </h3>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
@@ -160,18 +166,32 @@ export function CategoryManagement() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="edit-name">Name</Label>
-                <Input id="edit-name" name="name" defaultValue={editing.name} required />
+                <Input
+                  id="edit-name"
+                  name="name"
+                  defaultValue={editing.name}
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="edit-description">Description</Label>
-                <Textarea id="edit-description" name="description" rows={2} defaultValue={editing.description ?? ""} />
+                <Textarea
+                  id="edit-description"
+                  name="description"
+                  rows={2}
+                  defaultValue={editing.description ?? ""}
+                />
               </div>
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={updateCategory.isPending}>
                 {updateCategory.isPending ? "Updating..." : "Update Category"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditing(null)}
+              >
                 Cancel
               </Button>
             </div>
@@ -183,10 +203,18 @@ export function CategoryManagement() {
         <table className="min-w-full divide-y divide-slate-600">
           <thead className="bg-slate-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">Slug</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
+                Slug
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-300">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-600 bg-slate-800">
@@ -199,14 +227,22 @@ export function CategoryManagement() {
               .map((c: CategoryRow) => (
                 <tr key={c.id}>
                   <td className="whitespace-nowrap px-6 py-4">
-                    <div className="text-sm font-medium text-white">{c.name}</div>
-                    <div className="text-xs text-slate-400">{c.description}</div>
+                    <div className="text-sm font-medium text-white">
+                      {c.name}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {c.description}
+                    </div>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">{c.slug}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
+                    {c.slug}
+                  </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <button
                       className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                        c.isActive ? "bg-green-900 text-green-200" : "bg-slate-600 text-slate-200"
+                        c.isActive
+                          ? "bg-green-900 text-green-200"
+                          : "bg-slate-600 text-slate-200"
                       }`}
                       onClick={() => toggleActive.mutate(c.id)}
                     >
@@ -215,14 +251,22 @@ export function CategoryManagement() {
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                     <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setEditing(c)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditing(c)}
+                      >
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => {
-                          if (confirm("Delete this category? This cannot be undone.")) {
+                          if (
+                            confirm(
+                              "Delete this category? This cannot be undone.",
+                            )
+                          ) {
                             deleteCategory.mutate(c.id);
                           }
                         }}
@@ -240,5 +284,3 @@ export function CategoryManagement() {
     </div>
   );
 }
-
-

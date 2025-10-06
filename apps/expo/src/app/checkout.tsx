@@ -1,5 +1,12 @@
 import React from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
@@ -39,12 +46,19 @@ export default function CheckoutScreen() {
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-background">
       <Stack.Screen options={{ title: "Checkout" }} />
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 180, paddingTop: 8 }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: 8 }}
+      >
         <View className="p-4">
-          <Text className="mb-4 text-2xl font-bold text-foreground">Shipping & Billing</Text>
+          <Text className="mb-4 text-2xl font-bold text-foreground">
+            Shipping & Billing
+          </Text>
 
           <View className="mb-4">
-            <Text className="mb-2 font-semibold text-foreground">Shipping Address</Text>
+            <Text className="mb-2 font-semibold text-foreground">
+              Shipping Address
+            </Text>
             <TextInput
               className="rounded-xl border border-gray-200 bg-white px-4 py-3"
               placeholder="123 Main St, City, Country"
@@ -54,7 +68,9 @@ export default function CheckoutScreen() {
           </View>
 
           <View className="mb-4">
-            <Text className="mb-2 font-semibold text-foreground">Billing Address</Text>
+            <Text className="mb-2 font-semibold text-foreground">
+              Billing Address
+            </Text>
             <TextInput
               className="rounded-xl border border-gray-200 bg-white px-4 py-3"
               placeholder="Same as shipping or enter different address"
@@ -64,7 +80,9 @@ export default function CheckoutScreen() {
           </View>
 
           <View className="mb-4">
-            <Text className="mb-2 font-semibold text-foreground">Notes (optional)</Text>
+            <Text className="mb-2 font-semibold text-foreground">
+              Notes (optional)
+            </Text>
             <TextInput
               className="rounded-xl border border-gray-200 bg-white px-4 py-3"
               placeholder="Delivery instructions, etc."
@@ -88,7 +106,9 @@ export default function CheckoutScreen() {
               createOrder.mutate(payload);
             }}
           >
-            <Text className={`text-center text-lg font-bold ${createOrder.isPending ? "text-gray-500" : "text-white"}`}>
+            <Text
+              className={`text-center text-lg font-bold ${createOrder.isPending ? "text-gray-500" : "text-white"}`}
+            >
               {createOrder.isPending ? "Placing Order..." : "Place Order"}
             </Text>
           </Pressable>
@@ -98,5 +118,3 @@ export default function CheckoutScreen() {
     </SafeAreaView>
   );
 }
-
-

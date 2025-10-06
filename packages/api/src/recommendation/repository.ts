@@ -1,6 +1,5 @@
 import { addHours } from "date-fns";
 
-import { and, desc, eq, gt, inArray, sql } from "@acme/db";
 /*
   The Drizzle query builder types for selected column objects are not fully inferred
   here, which triggers @typescript-eslint unsafe rules on member access/assignment.
@@ -9,6 +8,7 @@ import { and, desc, eq, gt, inArray, sql } from "@acme/db";
 */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import type { db } from "@acme/db/client";
+import { and, desc, eq, gt, inArray, sql } from "@acme/db";
 import {
   cartItems,
   orderItems,
@@ -53,13 +53,17 @@ export class RecommendationRepository {
 
   constructor(options?: RecommendationRepositoryOptions) {
     this.options = {
-      maxInteractionLookbackHours: options?.maxInteractionLookbackHours ?? 24 * 14,
+      maxInteractionLookbackHours:
+        options?.maxInteractionLookbackHours ?? 24 * 14,
       maxSeedProducts: options?.maxSeedProducts ?? 50,
     };
   }
 
   async fetchUserInteractions(dbClient: typeof db, userId: string) {
-    const cutoff = addHours(new Date(), -this.options.maxInteractionLookbackHours);
+    const cutoff = addHours(
+      new Date(),
+      -this.options.maxInteractionLookbackHours,
+    );
     const interactions = (await dbClient
       .select({
         productId: userInteractions.productId,
@@ -117,7 +121,10 @@ export class RecommendationRepository {
 
     return rows
       .filter((row: AggregateRow) => !productIds.includes(row.productId))
-      .map((row) => ({ productId: row.productId, score: Number(row.score ?? 0) }));
+      .map((row) => ({
+        productId: row.productId,
+        score: Number(row.score ?? 0),
+      }));
   }
 
   async fetchTrendingSignals(dbClient: typeof db, hours: number) {
@@ -201,5 +208,3 @@ export class RecommendationRepository {
       .where(inArray(products.id, productIds));
   }
 }
-
-

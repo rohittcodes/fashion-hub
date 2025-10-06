@@ -1,23 +1,23 @@
 import React, { useState } from "react";
 import {
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
-  View,
-  Platform,
   ToastAndroid,
+  View,
 } from "react-native";
 import { Image as ExpoImage } from "expo-image";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ionicons } from "@expo/vector-icons";
-import { useWishlist } from "~/utils/wishlist-store";
 import { useRouter } from "expo-router";
-import { authClient } from "~/utils/auth";
+import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
 import { trpc } from "~/utils/api";
+import { authClient } from "~/utils/auth";
+import { useWishlist } from "~/utils/wishlist-store";
 
 interface ProductDetailProps {
   product: RouterOutputs["product"]["byId"];
@@ -120,11 +120,14 @@ export function ProductDetail({ product }: ProductDetailProps) {
     parseFloat(product.compareAtPrice) > parseFloat(product.price);
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 54 }}>
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerStyle={{ paddingBottom: 54 }}
+    >
       <View className="p-4">
         <View className="mb-6">
           <View className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg">
-            <View className="absolute top-4 right-4 z-10">
+            <View className="absolute right-4 top-4 z-10">
               <Pressable
                 onPress={() => void toggle(product.id)}
                 className="rounded-full bg-white/90 p-3 shadow-lg"
@@ -136,7 +139,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 />
               </Pressable>
             </View>
-            <View className="absolute top-4 left-4 z-10">
+            <View className="absolute left-4 top-4 z-10">
               <Pressable className="rounded-full bg-white/90 p-3 shadow-lg">
                 <Ionicons name="share-outline" size={24} color="#6B7280" />
               </Pressable>
@@ -144,10 +147,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
             {images.length > 0 ? (
               <ExpoImage
-                source={{ 
-                  uri: images[selectedImageIndex]?.startsWith('http') 
-                    ? images[selectedImageIndex] 
-                    : `https://picsum.photos/400/400?random=${product.id.slice(-3)}`
+                source={{
+                  uri: images[selectedImageIndex]?.startsWith("http")
+                    ? images[selectedImageIndex]
+                    : `https://picsum.photos/400/400?random=${product.id.slice(-3)}`,
                 }}
                 contentFit="cover"
                 style={{ width: "100%", height: "100%" }}
@@ -160,8 +163,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
               />
             ) : (
               <ExpoImage
-                source={{ 
-                  uri: `https://picsum.photos/400/400?random=${product.id.slice(-3)}`
+                source={{
+                  uri: `https://picsum.photos/400/400?random=${product.id.slice(-3)}`,
                 }}
                 contentFit="cover"
                 style={{ width: "100%", height: "100%" }}
@@ -192,10 +195,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   }`}
                 >
                   <ExpoImage
-                    source={{ 
-                      uri: image.startsWith('http') 
-                        ? image 
-                        : `https://picsum.photos/80/80?random=${product.id.slice(-3)}`
+                    source={{
+                      uri: image.startsWith("http")
+                        ? image
+                        : `https://picsum.photos/80/80?random=${product.id.slice(-3)}`,
                     }}
                     contentFit="cover"
                     style={{ width: "100%", height: "100%" }}
@@ -222,7 +225,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <Ionicons name="star" size={16} color="#FCD34D" />
             <Ionicons name="star" size={16} color="#FCD34D" />
             <Ionicons name="star" size={16} color="#FCD34D" />
-            <Text className="ml-2 text-sm text-gray-600">(4.5) • 128 reviews</Text>
+            <Text className="ml-2 text-sm text-gray-600">
+              (4.5) • 128 reviews
+            </Text>
           </View>
 
           <View className="mt-4 flex flex-row items-center">
@@ -248,17 +253,19 @@ export function ProductDetail({ product }: ProductDetailProps) {
           </View>
 
           <View className="mt-6">
-            <Text className="text-base text-gray-700 leading-6">{product.description}</Text>
+            <Text className="text-base leading-6 text-gray-700">
+              {product.description}
+            </Text>
 
             <View className="mt-4 flex-row flex-wrap">
               {product.sku && (
-                <View className="mr-4 mb-2 rounded-lg bg-gray-100 px-3 py-2">
+                <View className="mb-2 mr-4 rounded-lg bg-gray-100 px-3 py-2">
                   <Text className="text-sm font-medium text-gray-700">
                     SKU: {product.sku}
                   </Text>
                 </View>
               )}
-              <View className="mr-4 mb-2 rounded-lg bg-gray-100 px-3 py-2">
+              <View className="mb-2 mr-4 rounded-lg bg-gray-100 px-3 py-2">
                 <Text className="text-sm font-medium text-gray-700">
                   Weight: {product.weight ? `${product.weight} lbs` : "N/A"}
                 </Text>
@@ -276,21 +283,25 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   </Text>
                 </View>
                 {product.inventory <= 10 && (
-                  <Text className="ml-2 text-xs text-orange-600 font-medium">
+                  <Text className="ml-2 text-xs font-medium text-orange-600">
                     Hurry! Limited stock
                   </Text>
                 )}
               </View>
             ) : (
               <View className="rounded-full bg-red-100 px-3 py-1">
-                <Text className="text-sm font-semibold text-red-800">Out of Stock</Text>
+                <Text className="text-sm font-semibold text-red-800">
+                  Out of Stock
+                </Text>
               </View>
             )}
           </View>
         </View>
         <View className="mb-6">
           <View className="mb-6 flex flex-row items-center">
-            <Text className="mr-4 text-base font-semibold text-gray-700">Quantity:</Text>
+            <Text className="mr-4 text-base font-semibold text-gray-700">
+              Quantity:
+            </Text>
             <View className="flex flex-row items-center rounded-xl border border-gray-200 bg-white">
               <Pressable
                 className="h-12 w-12 items-center justify-center rounded-l-xl border-r border-gray-200"
@@ -518,11 +529,11 @@ function ProductReviews({
               key={review.id}
               className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
             >
-                <View className="mb-2 flex flex-row items-center justify-between">
-                  <View className="flex flex-row items-center">
-                    <Text className="font-medium text-gray-900">
-                      Anonymous User
-                    </Text>
+              <View className="mb-2 flex flex-row items-center justify-between">
+                <View className="flex flex-row items-center">
+                  <Text className="font-medium text-gray-900">
+                    Anonymous User
+                  </Text>
                   <View className="ml-2 flex flex-row">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Text

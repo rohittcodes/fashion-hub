@@ -8,16 +8,16 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
+import { Heart } from "lucide-react";
 
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import { Input } from "@acme/ui/input";
 import { toast } from "@acme/ui/toast";
 
-import { useTRPC } from "~/trpc/react";
-import { useWishlist } from "~/lib/wishlist";
 import { useRecommendationTracking } from "~/lib/recommendations";
-import { Heart } from "lucide-react";
+import { useWishlist } from "~/lib/wishlist";
+import { useTRPC } from "~/trpc/react";
 
 // Product Card Component
 export function ProductCard(props: {
@@ -34,7 +34,6 @@ export function ProductCard(props: {
   };
 }) {
   const { product } = props;
-  const { track } = useRecommendationTracking();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { isWishlisted, toggle } = useWishlist(product.id);
@@ -78,7 +77,9 @@ export function ProductCard(props: {
             aria-label={wish ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Heart
-              className={wish ? "h-4 w-4 text-pink-600" : "h-4 w-4 text-muted-foreground"}
+              className={
+                wish ? "h-4 w-4 text-pink-600" : "h-4 w-4 text-muted-foreground"
+              }
               fill={wish ? "#DB2777" : "none"}
             />
           </button>
@@ -305,7 +306,10 @@ export function CategoryList() {
 export function CategoryGrid() {
   const trpc = useTRPC();
   const { data: categories } = useSuspenseQuery(
-    trpc.category.all.queryOptions({ includeInactive: false, withProductCount: true }),
+    trpc.category.all.queryOptions({
+      includeInactive: false,
+      withProductCount: true,
+    }),
   );
 
   if (categories.length === 0) {
@@ -319,14 +323,22 @@ export function CategoryGrid() {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       {categories.slice(0, 12).map((c) => (
-        <Link key={c.id} href={`/categories/${c.slug}`} className="group overflow-hidden rounded-lg border bg-card shadow-sm transition hover:shadow-md">
+        <Link
+          key={c.id}
+          href={`/categories/${c.slug}`}
+          className="group overflow-hidden rounded-lg border bg-card shadow-sm transition hover:shadow-md"
+        >
           <div className="aspect-square overflow-hidden bg-muted">
             <ImageWrapper src={c.image} alt={c.name} />
           </div>
           <div className="p-3">
             <p className="line-clamp-1 font-medium">{c.name}</p>
-            {"productCount" in (c as Record<string, unknown>) && typeof (c as Record<string, unknown>).productCount === "number" ? (
-              <p className="text-xs text-muted-foreground">{(c as unknown as { productCount: number }).productCount} products</p>
+            {"productCount" in (c as Record<string, unknown>) &&
+            typeof (c as Record<string, unknown>).productCount === "number" ? (
+              <p className="text-xs text-muted-foreground">
+                {(c as unknown as { productCount: number }).productCount}{" "}
+                products
+              </p>
             ) : null}
           </div>
         </Link>
@@ -338,6 +350,12 @@ export function CategoryGrid() {
 function ImageWrapper({ alt }: { src?: string | null; alt: string }) {
   const url = `https://placehold.co/600x600/fce7f3/9d174d.png?text=${encodeURIComponent(alt)}`;
   return (
-    <Image src={url} alt={alt} className="h-full w-full object-cover transition-transform group-hover:scale-105" width={600} height={600} />
+    <Image
+      src={url}
+      alt={alt}
+      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+      width={600}
+      height={600}
+    />
   );
 }

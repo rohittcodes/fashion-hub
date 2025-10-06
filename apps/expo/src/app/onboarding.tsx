@@ -20,7 +20,9 @@ export default function OnboardingScreen() {
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-background">
       <Stack.Screen options={{ title: "Welcome" }} />
       <ImageBackground
-        source={{ uri: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200" }}
+        source={{
+          uri: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200",
+        }}
         resizeMode="cover"
         style={{ flex: 1, justifyContent: "flex-end" }}
       >
@@ -36,11 +38,16 @@ export default function OnboardingScreen() {
             <Pressable
               className="flex-row items-center justify-center rounded-xl bg-white py-4"
               onPress={() =>
-                authClient.signIn.social({ provider: "discord", callbackURL: "/" })
+                authClient.signIn.social({
+                  provider: "discord",
+                  callbackURL: "/",
+                })
               }
             >
               <Ionicons name="logo-discord" size={20} color="#5865F2" />
-              <Text className="ml-2 text-base font-semibold text-gray-900">Continue with Discord</Text>
+              <Text className="ml-2 text-base font-semibold text-gray-900">
+                Continue with Discord
+              </Text>
             </Pressable>
 
             <Pressable
@@ -48,7 +55,9 @@ export default function OnboardingScreen() {
               onPress={() => router.replace("/")}
             >
               <Ionicons name="storefront-outline" size={20} color="#fff" />
-              <Text className="ml-2 text-base font-semibold text-white">Browse as Guest</Text>
+              <Text className="ml-2 text-base font-semibold text-white">
+                Browse as Guest
+              </Text>
             </Pressable>
           </View>
 
@@ -60,5 +69,3 @@ export default function OnboardingScreen() {
     </SafeAreaView>
   );
 }
-
-

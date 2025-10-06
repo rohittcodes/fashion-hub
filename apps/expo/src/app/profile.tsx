@@ -1,11 +1,19 @@
 import React from "react";
-import { Alert, Button, FlatList, Pressable, Text, View, ScrollView } from "react-native";
+import {
+  Alert,
+  Button,
+  FlatList,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
-import { authClient } from "~/utils/auth";
 import { trpc } from "~/utils/api";
+import { authClient } from "~/utils/auth";
 import { useWishlist } from "~/utils/wishlist-store";
 
 export default function ProfileScreen() {
@@ -20,25 +28,26 @@ export default function ProfileScreen() {
   });
 
   const handleSignOut = () => {
-    Alert.alert(
-      "Sign Out",
-      "Are you sure you want to sign out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Sign Out", onPress: () => void authClient.signOut() },
-      ],
-    );
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Sign Out", onPress: () => void authClient.signOut() },
+    ]);
   };
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-background">
       <Stack.Screen options={{ title: "Profile" }} />
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 112 }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 24, paddingBottom: 112 }}
+      >
         <View className="mb-8">
           <Text className="mb-2 text-2xl font-bold text-gray-900">
             {session?.user.name ?? "Guest User"}
           </Text>
-          <Text className="text-gray-600">{session?.user.email ?? "Sign in to personalize your experience"}</Text>
+          <Text className="text-gray-600">
+            {session?.user.email ?? "Sign in to personalize your experience"}
+          </Text>
         </View>
 
         <View className="gap-4">
@@ -46,14 +55,16 @@ export default function ProfileScreen() {
             <Text className="mb-2 text-lg font-semibold text-gray-900">
               My Wishlist
             </Text>
-            <Text className="text-gray-600 mb-3">
+            <Text className="mb-3 text-gray-600">
               {wishlistCount} item{wishlistCount === 1 ? "" : "s"} saved
             </Text>
             <Pressable
               className="self-start rounded-md bg-pink-500 px-4 py-2"
               onPress={() => router.push("/wishlist")}
             >
-              <Text className="text-white font-semibold text-sm">Manage Wishlist</Text>
+              <Text className="text-sm font-semibold text-white">
+                Manage Wishlist
+              </Text>
             </Pressable>
           </View>
 
@@ -64,9 +75,7 @@ export default function ProfileScreen() {
             <Text className="text-gray-600">
               Email: {session?.user.email ?? "Not signed in"}
             </Text>
-            <Text className="text-gray-600">
-              Role: Guest
-            </Text>
+            <Text className="text-gray-600">Role: Guest</Text>
           </View>
 
           {session && (
@@ -88,7 +97,8 @@ export default function ProfileScreen() {
                           {order.orderNumber}
                         </Text>
                         <Text className="text-sm text-gray-600">
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
                         </Text>
                       </View>
                       <Text className="mb-2 text-sm text-gray-600">
@@ -107,11 +117,7 @@ export default function ProfileScreen() {
           )}
 
           {session ? (
-            <Button
-              title="Sign Out"
-              onPress={handleSignOut}
-              color="#ef4444"
-            />
+            <Button title="Sign Out" onPress={handleSignOut} color="#ef4444" />
           ) : (
             <Button
               title="Go to Onboarding"

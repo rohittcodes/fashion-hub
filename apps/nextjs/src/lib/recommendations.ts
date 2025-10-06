@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
 
 import type { RouterInputs } from "@acme/api";
 
@@ -13,7 +14,9 @@ type InteractionKey = `${string}:${InteractionType}`;
 
 export function useRecommendationTracking() {
   const trpc = useTRPC();
-  const mutation = trpc.recommendation.trackInteraction.useMutation();
+  const mutation = useMutation(
+    trpc.recommendation.trackInteraction.mutationOptions(),
+  );
   const sentInteractions = useRef<Set<InteractionKey>>(new Set());
 
   const track = useCallback(
@@ -31,16 +34,20 @@ export function useRecommendationTracking() {
         sentInteractions.current.add(key);
       }
 
-      mutation.mutate(
-        { productId, interactionType, metadata },
-        {
-          onError: (error) => {
-            if (error.data?.code !== "UNAUTHORIZED") {
-              console.warn("Failed to track interaction", error);
-            }
-          },
-        },
-      );
+      if (metadata) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        mutation.mutate({
+          productId,
+          interactionType,
+          metadata,
+        } as RouterInputs["recommendation"]["trackInteraction"]);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        mutation.mutate({
+          productId,
+          interactionType,
+        } as RouterInputs["recommendation"]["trackInteraction"]);
+      }
     },
     [mutation],
   );

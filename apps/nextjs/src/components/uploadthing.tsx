@@ -1,13 +1,16 @@
 "use client";
 
 import { UploadButton, UploadDropzone } from "@uploadthing/react";
+
 import type { OurFileRouter } from "~/lib/uploadthing";
 
 interface ImageUploadButtonProps {
   onUploadComplete?: (url: string) => void;
 }
 
-export function ImageUploadButton({ onUploadComplete }: ImageUploadButtonProps) {
+export function ImageUploadButton({
+  onUploadComplete,
+}: ImageUploadButtonProps) {
   return (
     <UploadButton<OurFileRouter, "imageUploader">
       endpoint="imageUploader"
@@ -44,10 +47,10 @@ export function ImageUploadDropzone() {
   );
 }
 
-export function UploadThingProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <div>
-      {children}
-    </div>
-  );
+export function UploadThingProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <div>{children}</div>;
 }

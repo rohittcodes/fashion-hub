@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
 import { Button } from "@acme/ui/button";
-import { Input } from "@acme/ui/input";
 import { Textarea } from "@acme/ui/textarea";
 import { toast } from "@acme/ui/toast";
 
 import { useTRPC } from "~/trpc/react";
-import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -32,14 +31,19 @@ export default function CheckoutPage() {
     }),
   );
 
-  const canSubmit = shipping.trim().length > 0 && billing.trim().length > 0 && !createOrder.isPending;
+  const canSubmit =
+    shipping.trim().length > 0 &&
+    billing.trim().length > 0 &&
+    !createOrder.isPending;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-6 text-3xl font-bold">Checkout</h1>
       <div className="mx-auto max-w-2xl space-y-4">
         <div>
-          <label className="mb-2 block text-sm font-medium">Shipping Address</label>
+          <label className="mb-2 block text-sm font-medium">
+            Shipping Address
+          </label>
           <Textarea
             value={shipping}
             onChange={(e) => setShipping(e.target.value)}
@@ -48,7 +52,9 @@ export default function CheckoutPage() {
           />
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">Billing Address</label>
+          <label className="mb-2 block text-sm font-medium">
+            Billing Address
+          </label>
           <Textarea
             value={billing}
             onChange={(e) => setBilling(e.target.value)}
@@ -57,7 +63,9 @@ export default function CheckoutPage() {
           />
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">Notes (optional)</label>
+          <label className="mb-2 block text-sm font-medium">
+            Notes (optional)
+          </label>
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -82,6 +90,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-
-

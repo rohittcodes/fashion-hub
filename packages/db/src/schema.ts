@@ -67,9 +67,7 @@ export const orders = pgTable(
     createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp({ mode: "date", withTimezone: true }).defaultNow(),
   },
-  (table) => [
-    index("orders_user_id_idx").on(table.userId),
-  ],
+  (table) => [index("orders_user_id_idx").on(table.userId)],
 );
 
 export const orderItems = pgTable("order_items", {
@@ -134,7 +132,9 @@ export const userInteractions = pgTable(
       .references(() => products.id, { onDelete: "cascade" }),
     interactionType: interactionTypeEnum("interaction_type").notNull(),
     weight: decimal({ precision: 6, scale: 2 }).notNull().default("1.00"),
-    occurredAt: timestamp({ mode: "date", withTimezone: true }).defaultNow().notNull(),
+    occurredAt: timestamp({ mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
     metadata: text(),
   },
   (table) => [
@@ -227,9 +227,12 @@ export const CreateProductReviewSchema = createInsertSchema(productReviews, {
   updatedAt: true,
 });
 
-export const CreateUserInteractionSchema = createInsertSchema(userInteractions, {
-  metadata: z.string().max(1000).optional(),
-}).omit({
+export const CreateUserInteractionSchema = createInsertSchema(
+  userInteractions,
+  {
+    metadata: z.string().max(1000).optional(),
+  },
+).omit({
   id: true,
   occurredAt: true,
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@acme/ui/button";
@@ -8,9 +9,8 @@ import { Input } from "@acme/ui/input";
 import { Label } from "@acme/ui/label";
 import { Textarea } from "@acme/ui/textarea";
 
-import { useTRPC } from "~/trpc/react";
-import Image from "next/image";
 import { ImageUploadButton } from "~/components/uploadthing";
+import { useTRPC } from "~/trpc/react";
 
 interface Product {
   id: string;
@@ -104,7 +104,7 @@ export function ProductManagement() {
       images: uploadedImageUrl ? [uploadedImageUrl] : [],
       isFeatured: formData.get("isFeatured") === "on",
     });
-    
+
     // Reset uploaded image URL after successful creation
     setUploadedImageUrl("");
   };
@@ -135,11 +135,13 @@ export function ProductManagement() {
         categoryId: formData.get("categoryId") as string,
         sku: formData.get("sku") as string,
         inventory: parseInt(formData.get("inventory") as string),
-        images: uploadedImageUrl ? [uploadedImageUrl] : editingProduct.images ?? [],
+        images: uploadedImageUrl
+          ? [uploadedImageUrl]
+          : (editingProduct.images ?? []),
         isFeatured: formData.get("isFeatured") === "on",
       },
     });
-    
+
     // Reset uploaded image URL after successful update
     setUploadedImageUrl("");
   };
@@ -162,9 +164,7 @@ export function ProductManagement() {
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">
-          Product Management
-        </h2>
+        <h2 className="text-xl font-semibold text-white">Product Management</h2>
         <div className="flex items-center gap-3">
           <input
             placeholder="Search products..."
@@ -173,15 +173,17 @@ export function ProductManagement() {
             onChange={(e) => setProductSearch(e.target.value)}
           />
           <Button onClick={() => setShowCreateForm(!showCreateForm)}>
-          {showCreateForm ? "Cancel" : "Create Product"}
+            {showCreateForm ? "Cancel" : "Create Product"}
           </Button>
         </div>
       </div>
 
       {/* Create Product Form */}
       {showCreateForm && (
-        <div className="mb-6 rounded-lg bg-slate-700 p-4 border border-slate-600">
-          <h3 className="mb-4 text-lg font-medium text-white">Create New Product</h3>
+        <div className="mb-6 rounded-lg border border-slate-600 bg-slate-700 p-4">
+          <h3 className="mb-4 text-lg font-medium text-white">
+            Create New Product
+          </h3>
           <form onSubmit={handleCreateProduct} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
@@ -233,14 +235,16 @@ export function ProductManagement() {
                 <ImageUploadButton onUploadComplete={setUploadedImageUrl} />
                 {uploadedImageUrl && (
                   <div className="mt-2">
-                    <Image 
-                      src={uploadedImageUrl} 
-                      alt="Uploaded" 
-                      className="h-32 w-32 object-cover rounded"
+                    <Image
+                      src={uploadedImageUrl}
+                      alt="Uploaded"
+                      className="h-32 w-32 rounded object-cover"
                       width={128}
                       height={128}
                     />
-                    <p className="text-sm text-slate-400 mt-1">Image uploaded successfully!</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Image uploaded successfully!
+                    </p>
                   </div>
                 )}
               </div>
@@ -265,7 +269,7 @@ export function ProductManagement() {
 
       {/* Edit Product Form */}
       {editingProduct && (
-        <div className="mb-6 rounded-lg bg-slate-700 p-4 border border-slate-600">
+        <div className="mb-6 rounded-lg border border-slate-600 bg-slate-700 p-4">
           <h3 className="mb-4 text-lg font-medium text-white">Edit Product</h3>
           <form onSubmit={handleUpdateProduct} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -341,26 +345,28 @@ export function ProductManagement() {
                 <ImageUploadButton onUploadComplete={setUploadedImageUrl} />
                 {uploadedImageUrl && (
                   <div className="mt-2">
-                    <Image 
-                      src={uploadedImageUrl} 
-                      alt="Uploaded" 
-                      className="h-32 w-32 object-cover rounded"
+                    <Image
+                      src={uploadedImageUrl}
+                      alt="Uploaded"
+                      className="h-32 w-32 rounded object-cover"
                       width={128}
                       height={128}
                     />
-                    <p className="text-sm text-slate-400 mt-1">New image uploaded!</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      New image uploaded!
+                    </p>
                   </div>
                 )}
                 {!uploadedImageUrl && editingProduct.images?.[0] && (
                   <div className="mt-2">
                     <Image
-                      src={editingProduct.images[0]} 
-                      alt="Current" 
-                      className="h-32 w-32 object-cover rounded"
+                      src={editingProduct.images[0]}
+                      alt="Current"
+                      className="h-32 w-32 rounded object-cover"
                       width={128}
                       height={128}
                     />
-                    <p className="text-sm text-slate-400 mt-1">Current image</p>
+                    <p className="mt-1 text-sm text-slate-400">Current image</p>
                   </div>
                 )}
               </div>
@@ -426,78 +432,80 @@ export function ProductManagement() {
                 ),
               )
               .map((product: Product) => (
-              <tr key={product.id}>
-                <td className="whitespace-nowrap px-6 py-4">
-                  <div>
-                    <div className="text-sm font-medium text-white">
-                      {product.name}
+                <tr key={product.id}>
+                  <td className="whitespace-nowrap px-6 py-4">
+                    <div>
+                      <div className="text-sm font-medium text-white">
+                        {product.name}
+                      </div>
+                      <div className="text-sm text-slate-400">
+                        {product.sku}
+                      </div>
                     </div>
-                    <div className="text-sm text-slate-400">{product.sku}</div>
-                  </div>
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-white">
-                  ${product.price}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-white">
-                  {product.inventory}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  <button
-                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                      product.isFeatured
-                        ? "bg-blue-900 text-blue-200"
-                        : "bg-slate-600 text-slate-200"
-                    }`}
-                    onClick={() =>
-                      updateProduct.mutate({
-                        id: product.id,
-                        data: { isFeatured: !product.isFeatured },
-                      })
-                    }
-                  >
-                    {product.isFeatured ? "Yes" : "No"}
-                  </button>
-                </td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  {product.isFeatured ? (
-                    <span className="inline-flex rounded-full bg-blue-900 px-2 py-1 text-xs font-semibold text-blue-200">
-                      Featured
-                    </span>
-                  ) : (
-                    <span className="inline-flex rounded-full bg-slate-600 px-2 py-1 text-xs font-semibold text-slate-200">
-                      Regular
-                    </span>
-                  )}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingProduct(product)}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-white">
+                    ${product.price}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-white">
+                    {product.inventory}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4">
+                    <button
+                      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                        product.isFeatured
+                          ? "bg-blue-900 text-blue-200"
+                          : "bg-slate-600 text-slate-200"
+                      }`}
+                      onClick={() =>
+                        updateProduct.mutate({
+                          id: product.id,
+                          data: { isFeatured: !product.isFeatured },
+                        })
+                      }
                     >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {
-                        if (
-                          confirm(
-                            "Are you sure you want to delete this product?",
-                          )
-                        ) {
-                          deleteProduct.mutate(product.id);
-                        }
-                      }}
-                      disabled={deleteProduct.isPending}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {product.isFeatured ? "Yes" : "No"}
+                    </button>
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4">
+                    {product.isFeatured ? (
+                      <span className="inline-flex rounded-full bg-blue-900 px-2 py-1 text-xs font-semibold text-blue-200">
+                        Featured
+                      </span>
+                    ) : (
+                      <span className="inline-flex rounded-full bg-slate-600 px-2 py-1 text-xs font-semibold text-slate-200">
+                        Regular
+                      </span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditingProduct(product)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              "Are you sure you want to delete this product?",
+                            )
+                          ) {
+                            deleteProduct.mutate(product.id);
+                          }
+                        }}
+                        disabled={deleteProduct.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

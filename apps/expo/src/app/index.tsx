@@ -2,12 +2,13 @@ import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
 import { ProductCard, ProductCardSkeleton } from "~/components/ProductCard";
 import { trpc } from "~/utils/api";
+
 // Auth is handled via a dedicated onboarding screen now
 
 function HeroSection() {
@@ -42,7 +43,9 @@ function CategoryGrid() {
 
   return (
     <View className="mb-8">
-      <Text className="mb-4 text-xl font-bold text-foreground">Shop by Category</Text>
+      <Text className="mb-4 text-xl font-bold text-foreground">
+        Shop by Category
+      </Text>
       <View className="flex-row flex-wrap justify-between">
         {categories.map((category, index) => (
           <Pressable
@@ -51,7 +54,11 @@ function CategoryGrid() {
             onPress={() => router.push("/categories")}
           >
             <View className="mb-2 items-center">
-              <Ionicons name={category.icon as keyof typeof Ionicons.glyphMap} size={32} color="#6B7280" />
+              <Ionicons
+                name={category.icon as keyof typeof Ionicons.glyphMap}
+                size={32}
+                color="#6B7280"
+              />
             </View>
             <Text className="text-center font-semibold text-gray-800">
               {category.name}
@@ -69,12 +76,19 @@ export default function Index() {
     trpc.product.featured.queryOptions({ limit: 8 }),
   );
 
-  console.log("Featured Products:", featuredProductsQuery.data?.length ?? 0, "items");
+  console.log(
+    "Featured Products:",
+    featuredProductsQuery.data?.length ?? 0,
+    "items",
+  );
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-background">
       <Stack.Screen options={{ title: "Fashion Hub" }} />
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 56 }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 56 }}
+      >
         <View className="p-4">
           <Text className="pb-2 text-center text-3xl font-bold text-foreground">
             Fashion <Text className="text-primary">Hub</Text>
@@ -93,7 +107,7 @@ export default function Index() {
                 Featured Products
               </Text>
               <Pressable onPress={() => router.push("/products")}>
-                <Text className="text-primary font-medium">View All</Text>
+                <Text className="font-medium text-primary">View All</Text>
               </Pressable>
             </View>
 
@@ -116,13 +130,14 @@ export default function Index() {
             ) : (
               <View className="flex-1 items-center justify-center py-16">
                 <Ionicons name="storefront-outline" size={40} color="#E5E7EB" />
-                <Text className="mt-3 text-muted-foreground">No featured products available</Text>
+                <Text className="mt-3 text-muted-foreground">
+                  No featured products available
+                </Text>
               </View>
             )}
           </View>
         </View>
       </ScrollView>
-      
     </SafeAreaView>
   );
 }

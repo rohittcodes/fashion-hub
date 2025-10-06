@@ -162,159 +162,176 @@ export const orderRouter = {
     )
     .mutation(async ({ ctx, input }) => {
       try {
-      console.log("[order.createFromCart] input:", {
-        shippingAddress: input.shippingAddress,
-        billingAddress: input.billingAddress,
-        hasNotes: Boolean(input.notes && input.notes.length > 0),
-        taxRate: input.taxRate,
-        shippingCost: input.shippingCost,
-      });
-      if (!ctx.session.user.id) {
-        throw new Error("User not authenticated");
-      }
-
-      // Get cart items with product details
-      const cartItemsWithProducts = await ctx.db
-        .select({
-          id: cartItems.id,
-          quantity: cartItems.quantity,
-          product: {
-            id: products.id,
-            name: products.name,
-            price: products.price,
-            inventory: products.inventory,
-            isActive: products.isActive,
-          },
-        })
-        .from(cartItems)
-        .leftJoin(products, eq(cartItems.productId, products.id))
-        .where(eq(cartItems.userId, ctx.session.user.id));
-
-      if (cartItemsWithProducts.length === 0) {
-        throw new Error("Cart is empty");
-      }
-
-      console.log("[order.createFromCart] cart items:", cartItemsWithProducts.length);
-
-      // Validate cart items
-      const invalidItems = cartItemsWithProducts.filter((item) => {
-        const product = item.product as {
-          isActive: boolean;
-          inventory: number;
-        } | null;
-        return (
-          !product || !product.isActive || product.inventory < item.quantity
-        );
-      });
-
-      if (invalidItems.length > 0) {
-        throw new Error(
-          "Some items in your cart are no longer available or have insufficient inventory",
-        );
-      }
-
-      // Calculate totals
-      const subtotal = cartItemsWithProducts.reduce((sum, item) => {
-        const product = item.product as { price: string };
-        return sum + parseFloat(product.price) * item.quantity;
-      }, 0);
-
-      const tax = subtotal * input.taxRate;
-      const shipping = input.shippingCost;
-      const total = subtotal + tax + shipping;
-
-      console.log("[order.createFromCart] totals:", {
-        subtotal,
-        tax,
-        shipping,
-        total,
-      });
-
-      // Create order
-      const orderNumber = generateOrderNumber();
-      const [order] = await ctx.db
-        .insert(orders)
-        .values({
-          userId: ctx.session.user.id,
-          orderNumber,
-          status: "pending",
-          subtotal: subtotal.toFixed(2),
-          tax: tax.toFixed(2),
-          shipping: shipping.toFixed(2),
-          total: total.toFixed(2),
-          currency: "USD",
+        console.log("[order.createFromCart] input:", {
           shippingAddress: input.shippingAddress,
           billingAddress: input.billingAddress,
-          notes: input.notes,
-        })
-        .returning({ id: orders.id, orderNumber: orders.orderNumber });
+          hasNotes: Boolean(input.notes && input.notes.length > 0),
+          taxRate: input.taxRate,
+          shippingCost: input.shippingCost,
+        });
+        if (!ctx.session.user.id) {
+          throw new Error("User not authenticated");
+        }
 
-      if (!order) {
-        throw new Error("Failed to create order");
-      }
+        // Get cart items with product details
+        const cartItemsWithProducts = await ctx.db
+          .select({
+            id: cartItems.id,
+            quantity: cartItems.quantity,
+            product: {
+              id: products.id,
+              name: products.name,
+              price: products.price,
+              inventory: products.inventory,
+              isActive: products.isActive,
+            },
+          })
+          .from(cartItems)
+          .leftJoin(products, eq(cartItems.productId, products.id))
+          .where(eq(cartItems.userId, ctx.session.user.id));
 
-      console.log("[order.createFromCart] order created:", order);
+        if (cartItemsWithProducts.length === 0) {
+          throw new Error("Cart is empty");
+        }
 
-      // Create order items and update inventory
-      console.log("[order.createFromCart] preparing order items insert...");
-      const orderItemsData = cartItemsWithProducts.map((item) => {
-        const product = item.product as { id: string; price: string };
-        return {
-          orderId: order.id,
-          productId: product.id,
-          quantity: item.quantity,
-          price: product.price,
-        };
-      });
-      console.log("[order.createFromCart] inserting order items:", orderItemsData.length);
-      if (orderItemsData.length > 0) {
-        const sample = orderItemsData[0] as unknown as Record<string, unknown>;
-        console.log("[order.createFromCart] sample order item:", sample);
         console.log(
-          "[order.createFromCart] sample types:",
-          {
+          "[order.createFromCart] cart items:",
+          cartItemsWithProducts.length,
+        );
+
+        // Validate cart items
+        const invalidItems = cartItemsWithProducts.filter((item) => {
+          const product = item.product as {
+            isActive: boolean;
+            inventory: number;
+          } | null;
+          return (
+            !product || !product.isActive || product.inventory < item.quantity
+          );
+        });
+
+        if (invalidItems.length > 0) {
+          throw new Error(
+            "Some items in your cart are no longer available or have insufficient inventory",
+          );
+        }
+
+        // Calculate totals
+        const subtotal = cartItemsWithProducts.reduce((sum, item) => {
+          const product = item.product as { price: string };
+          return sum + parseFloat(product.price) * item.quantity;
+        }, 0);
+
+        const tax = subtotal * input.taxRate;
+        const shipping = input.shippingCost;
+        const total = subtotal + tax + shipping;
+
+        console.log("[order.createFromCart] totals:", {
+          subtotal,
+          tax,
+          shipping,
+          total,
+        });
+
+        // Create order
+        const orderNumber = generateOrderNumber();
+        const [order] = await ctx.db
+          .insert(orders)
+          .values({
+            userId: ctx.session.user.id,
+            orderNumber,
+            status: "pending",
+            subtotal: subtotal.toFixed(2),
+            tax: tax.toFixed(2),
+            shipping: shipping.toFixed(2),
+            total: total.toFixed(2),
+            currency: "USD",
+            shippingAddress: input.shippingAddress,
+            billingAddress: input.billingAddress,
+            notes: input.notes,
+          })
+          .returning({ id: orders.id, orderNumber: orders.orderNumber });
+
+        if (!order) {
+          throw new Error("Failed to create order");
+        }
+
+        console.log("[order.createFromCart] order created:", order);
+
+        // Create order items and update inventory
+        console.log("[order.createFromCart] preparing order items insert...");
+        const orderItemsData = cartItemsWithProducts.map((item) => {
+          const product = item.product as { id: string; price: string };
+          return {
+            orderId: order.id,
+            productId: product.id,
+            quantity: item.quantity,
+            price: product.price,
+          };
+        });
+        console.log(
+          "[order.createFromCart] inserting order items:",
+          orderItemsData.length,
+        );
+        if (orderItemsData.length > 0) {
+          const sample = orderItemsData[0] as unknown as Record<
+            string,
+            unknown
+          >;
+          console.log("[order.createFromCart] sample order item:", sample);
+          console.log("[order.createFromCart] sample types:", {
             orderId: typeof sample.orderId,
             productId: typeof sample.productId,
             quantity: typeof sample.quantity,
             price: typeof sample.price,
-          },
+          });
+        }
+        try {
+          await ctx.db.insert(orderItems).values(orderItemsData);
+        } catch (e) {
+          console.error("[order.createFromCart] insert orderItems failed:", e);
+          throw e;
+        }
+        console.log("[order.createFromCart] order items inserted");
+
+        // Update product inventory
+        console.log(
+          "[order.createFromCart] updating inventory for items:",
+          cartItemsWithProducts.length,
         );
-      }
-      try {
-        await ctx.db.insert(orderItems).values(orderItemsData);
-      } catch (e) {
-        console.error("[order.createFromCart] insert orderItems failed:", e);
-        throw e;
-      }
-      console.log("[order.createFromCart] order items inserted");
+        for (const item of cartItemsWithProducts) {
+          const product = item.product as { id: string };
+          console.log(
+            "[order.createFromCart] decrement inventory for product:",
+            product.id,
+            "by",
+            item.quantity,
+          );
+          await ctx.db
+            .update(products)
+            .set({
+              inventory: sql`${products.inventory} - ${item.quantity}`,
+            })
+            .where(eq(products.id, product.id));
+        }
+        console.log("[order.createFromCart] inventory updated");
 
-      // Update product inventory
-      console.log("[order.createFromCart] updating inventory for items:", cartItemsWithProducts.length);
-      for (const item of cartItemsWithProducts) {
-        const product = item.product as { id: string };
-        console.log("[order.createFromCart] decrement inventory for product:", product.id, "by", item.quantity);
+        // Clear cart
+        console.log(
+          "[order.createFromCart] clearing cart for user:",
+          ctx.session.user.id,
+        );
         await ctx.db
-          .update(products)
-          .set({
-            inventory: sql`${products.inventory} - ${item.quantity}`,
-          })
-          .where(eq(products.id, product.id));
-      }
-      console.log("[order.createFromCart] inventory updated");
+          .delete(cartItems)
+          .where(eq(cartItems.userId, ctx.session.user.id));
+        console.log("[order.createFromCart] cart cleared");
 
-      // Clear cart
-      console.log("[order.createFromCart] clearing cart for user:", ctx.session.user.id);
-      await ctx.db
-        .delete(cartItems)
-        .where(eq(cartItems.userId, ctx.session.user.id));
-      console.log("[order.createFromCart] cart cleared");
-
-      const payload: { id: string; orderNumber: string } = {
-        id: order.id,
-        orderNumber: order.orderNumber,
-      };
-      console.log("[order.createFromCart] success payload:", payload);
-      return payload;
+        const payload: { id: string; orderNumber: string } = {
+          id: order.id,
+          orderNumber: order.orderNumber,
+        };
+        console.log("[order.createFromCart] success payload:", payload);
+        return payload;
       } catch (err) {
         console.error("[order.createFromCart] error:", err);
         throw err;
@@ -341,75 +358,75 @@ export const orderRouter = {
     )
     .mutation(async ({ ctx, input }) => {
       try {
-      // Get products and validate
-      const productsData = await ctx.db
-        .select()
-        .from(products)
-        .where(
-          sql`${products.id} IN (${input.items.map((item) => `'${item.productId}'`).join(",")})`,
-        );
+        // Get products and validate
+        const productsData = await ctx.db
+          .select()
+          .from(products)
+          .where(
+            sql`${products.id} IN (${input.items.map((item) => `'${item.productId}'`).join(",")})`,
+          );
 
-      if (productsData.length !== input.items.length) {
-        throw new Error("Some products not found");
-      }
-
-      // Calculate totals
-      const subtotal = input.items.reduce((sum, item) => {
-        const product = productsData.find((p) => p.id === item.productId);
-        if (!product) {
-          throw new Error("Product not found");
+        if (productsData.length !== input.items.length) {
+          throw new Error("Some products not found");
         }
-        return sum + parseFloat(product.price) * item.quantity;
-      }, 0);
 
-      const tax = subtotal * input.taxRate;
-      const shipping = input.shippingCost;
-      const total = subtotal + tax + shipping;
+        // Calculate totals
+        const subtotal = input.items.reduce((sum, item) => {
+          const product = productsData.find((p) => p.id === item.productId);
+          if (!product) {
+            throw new Error("Product not found");
+          }
+          return sum + parseFloat(product.price) * item.quantity;
+        }, 0);
 
-      // Create order
-      const orderNumber = generateOrderNumber();
-      const [order] = await ctx.db
-        .insert(orders)
-        .values({
-          userId: input.userId,
-          orderNumber,
-          status: "pending",
-          subtotal: subtotal.toFixed(2),
-          tax: tax.toFixed(2),
-          shipping: shipping.toFixed(2),
-          total: total.toFixed(2),
-          currency: "USD",
-          shippingAddress: input.shippingAddress,
-          billingAddress: input.billingAddress,
-          notes: input.notes,
-        })
-        .returning({ id: orders.id, orderNumber: orders.orderNumber });
+        const tax = subtotal * input.taxRate;
+        const shipping = input.shippingCost;
+        const total = subtotal + tax + shipping;
 
-      if (!order) {
-        throw new Error("Failed to create order");
-      }
+        // Create order
+        const orderNumber = generateOrderNumber();
+        const [order] = await ctx.db
+          .insert(orders)
+          .values({
+            userId: input.userId,
+            orderNumber,
+            status: "pending",
+            subtotal: subtotal.toFixed(2),
+            tax: tax.toFixed(2),
+            shipping: shipping.toFixed(2),
+            total: total.toFixed(2),
+            currency: "USD",
+            shippingAddress: input.shippingAddress,
+            billingAddress: input.billingAddress,
+            notes: input.notes,
+          })
+          .returning({ id: orders.id, orderNumber: orders.orderNumber });
 
-      // Create order items
-      const orderItemsData = input.items.map((item) => {
-        const product = productsData.find((p) => p.id === item.productId);
-        if (!product) {
-          throw new Error("Product not found");
+        if (!order) {
+          throw new Error("Failed to create order");
         }
-        return {
-          orderId: order.id,
-          productId: item.productId,
-          quantity: item.quantity,
-          price: product.price,
+
+        // Create order items
+        const orderItemsData = input.items.map((item) => {
+          const product = productsData.find((p) => p.id === item.productId);
+          if (!product) {
+            throw new Error("Product not found");
+          }
+          return {
+            orderId: order.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            price: product.price,
+          };
+        });
+
+        await ctx.db.insert(orderItems).values(orderItemsData);
+
+        const payload: { id: string; orderNumber: string } = {
+          id: order.id,
+          orderNumber: order.orderNumber,
         };
-      });
-
-      await ctx.db.insert(orderItems).values(orderItemsData);
-
-      const payload: { id: string; orderNumber: string } = {
-        id: order.id,
-        orderNumber: order.orderNumber,
-      };
-      return payload;
+        return payload;
       } catch (err) {
         console.error("[order.create] error:", err);
         throw err;

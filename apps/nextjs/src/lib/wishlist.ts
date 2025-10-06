@@ -56,5 +56,3 @@ export function useWishlist(productId?: string) {
 
   return { ids, isWishlisted, toggle } as const;
 }
-
-

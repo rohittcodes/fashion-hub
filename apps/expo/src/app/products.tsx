@@ -29,7 +29,6 @@ export default function ProductsScreen() {
     }),
   );
 
-
   return (
     <SafeAreaView edges={["bottom"]} className="bg-background">
       <Stack.Screen options={{ title: "All Products" }} />
@@ -49,16 +48,18 @@ export default function ProductsScreen() {
             value={search}
             onChangeText={setSearch}
           />
-          <View className="flex flex-row gap-4 mb-4">
+          <View className="mb-4 flex flex-row gap-4">
             <Pressable
               className={`rounded-xl px-4 py-3 ${
                 sortBy === "name" ? "bg-pink-500" : "bg-white"
               }`}
               onPress={() => setSortBy("name")}
             >
-              <Text className={`text-sm font-semibold ${
-                sortBy === "name" ? "text-white" : "text-gray-700"
-              }`}>
+              <Text
+                className={`text-sm font-semibold ${
+                  sortBy === "name" ? "text-white" : "text-gray-700"
+                }`}
+              >
                 Name
               </Text>
             </Pressable>
@@ -68,9 +69,11 @@ export default function ProductsScreen() {
               }`}
               onPress={() => setSortBy("price")}
             >
-              <Text className={`text-sm font-semibold ${
-                sortBy === "price" ? "text-white" : "text-gray-700"
-              }`}>
+              <Text
+                className={`text-sm font-semibold ${
+                  sortBy === "price" ? "text-white" : "text-gray-700"
+                }`}
+              >
                 Price
               </Text>
             </Pressable>
@@ -80,9 +83,11 @@ export default function ProductsScreen() {
               }`}
               onPress={() => setSortBy("createdAt")}
             >
-              <Text className={`text-sm font-semibold ${
-                sortBy === "createdAt" ? "text-white" : "text-gray-700"
-              }`}>
+              <Text
+                className={`text-sm font-semibold ${
+                  sortBy === "createdAt" ? "text-white" : "text-gray-700"
+                }`}
+              >
                 Newest
               </Text>
             </Pressable>

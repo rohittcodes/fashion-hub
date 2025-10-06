@@ -7,7 +7,9 @@ import { signInDiscordAction } from "~/app/_server-actions/auth";
 export function SignInButton() {
   return (
     <form action={signInDiscordAction}>
-      <Button variant="primary" type="submit">Sign in</Button>
+      <Button variant="primary" type="submit">
+        Sign in
+      </Button>
     </form>
   );
 }

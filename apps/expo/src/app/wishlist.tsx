@@ -22,11 +22,13 @@ export default function WishlistScreen() {
     }),
   );
 
-  const wishlistedProducts: RouterOutputs["product"]["all"] = React.useMemo(() => {
-    if (!productsQuery.data || wishlistIds.length === 0) return [] as RouterOutputs["product"]["all"];
-    const set = new Set(wishlistIds);
-    return productsQuery.data.filter((p) => set.has(p.id));
-  }, [productsQuery.data, wishlistIds]);
+  const wishlistedProducts: RouterOutputs["product"]["all"] =
+    React.useMemo(() => {
+      if (!productsQuery.data || wishlistIds.length === 0)
+        return [] as RouterOutputs["product"]["all"];
+      const set = new Set(wishlistIds);
+      return productsQuery.data.filter((p) => set.has(p.id));
+    }, [productsQuery.data, wishlistIds]);
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-background">
@@ -34,7 +36,9 @@ export default function WishlistScreen() {
 
       <View className="h-full w-full bg-gray-50 pb-28">
         <View className="p-6">
-          <Text className="mb-2 text-3xl font-bold text-gray-900">Wishlist</Text>
+          <Text className="mb-2 text-3xl font-bold text-gray-900">
+            Wishlist
+          </Text>
           <Text className="text-gray-600">
             {wishlistIds.length === 0
               ? "Your wishlist is empty."
@@ -44,7 +48,9 @@ export default function WishlistScreen() {
 
         {wishlistIds.length === 0 ? (
           <View className="flex-1 items-center justify-center px-6">
-            <Text className="mb-3 text-xl font-semibold text-foreground">No favorites yet</Text>
+            <Text className="mb-3 text-xl font-semibold text-foreground">
+              No favorites yet
+            </Text>
             <Text className="mb-6 text-center text-muted-foreground">
               Tap the heart icon on any product to add it to your wishlist.
             </Text>
@@ -52,7 +58,7 @@ export default function WishlistScreen() {
               className="rounded-full bg-pink-500 px-6 py-3"
               onPress={() => router.push("/products")}
             >
-              <Text className="text-white font-semibold">Browse products</Text>
+              <Text className="font-semibold text-white">Browse products</Text>
             </Pressable>
           </View>
         ) : productsQuery.isLoading ? (
@@ -75,7 +81,9 @@ export default function WishlistScreen() {
           />
         ) : (
           <View className="flex-1 items-center justify-center px-6">
-            <Text className="text-muted-foreground">Saved items are unavailable right now.</Text>
+            <Text className="text-muted-foreground">
+              Saved items are unavailable right now.
+            </Text>
           </View>
         )}
       </View>

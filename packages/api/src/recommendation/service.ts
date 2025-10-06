@@ -1,9 +1,9 @@
 import type { db } from "@acme/db/client";
 
-import { RecommendationEngine } from "./engine";
-import { computeContentSignals } from "./content-similarity";
-import { RecommendationRepository } from "./repository";
 import type { RecommendationRequest, RecommendationResult } from "./types";
+import { computeContentSignals } from "./content-similarity";
+import { RecommendationEngine } from "./engine";
+import { RecommendationRepository } from "./repository";
 
 type DbClient = typeof db;
 
@@ -13,28 +13,40 @@ export class RecommendationService {
 
   constructor(private readonly db: DbClient) {}
 
-  async recommendForUser(request: RecommendationRequest): Promise<RecommendationResult[]> {
+  async recommendForUser(
+    request: RecommendationRequest,
+  ): Promise<RecommendationResult[]> {
     const { userId, limit } = request;
 
     if (!userId) {
-      const trending = await this.repository.fetchTrendingSignals(this.db, 24 * 7);
+      const trending = await this.repository.fetchTrendingSignals(
+        this.db,
+        24 * 7,
+      );
       return trending.slice(0, limit).map((item, index) => ({
         productId: item.productId,
         score: Number((item.score * (1 - index * 0.02)).toFixed(4)),
       }));
     }
 
-    const interactions = await this.repository.fetchUserInteractions(this.db, userId);
+    const interactions = await this.repository.fetchUserInteractions(
+      this.db,
+      userId,
+    );
     const personalScores = this.engine.scoreInteractions(interactions);
     const seedProductIds = [...personalScores.keys()];
 
-    const collaborativeSignals = await this.repository.fetchCollaborativeSignals(
-      this.db,
-      seedProductIds,
-      userId,
-    );
+    const collaborativeSignals =
+      await this.repository.fetchCollaborativeSignals(
+        this.db,
+        seedProductIds,
+        userId,
+      );
 
-    const trendingSignals = await this.repository.fetchTrendingSignals(this.db, 24 * 3);
+    const trendingSignals = await this.repository.fetchTrendingSignals(
+      this.db,
+      24 * 3,
+    );
 
     const candidateIds = new Set<string>([
       ...seedProductIds,
@@ -42,10 +54,9 @@ export class RecommendationService {
       ...trendingSignals.map((t) => t.productId),
     ]);
 
-    const metadataRows = await this.repository.fetchProductMetadata(
-      this.db,
-      [...candidateIds],
-    );
+    const metadataRows = await this.repository.fetchProductMetadata(this.db, [
+      ...candidateIds,
+    ]);
 
     const metadataById = new Map(
       metadataRows.map((row) => [
@@ -88,19 +99,23 @@ export class RecommendationService {
   }
 
   async similarToProduct(
-    request: Required<Pick<RecommendationRequest, "productId">> & { limit: number; userId?: string },
+    request: Required<Pick<RecommendationRequest, "productId">> & {
+      limit: number;
+      userId?: string;
+    },
   ) {
     const { productId, limit, userId } = request;
-    const collaborativeSignals = await this.repository.fetchCollaborativeSignals(
-      this.db,
-      [productId],
-      userId,
-    );
+    const collaborativeSignals =
+      await this.repository.fetchCollaborativeSignals(
+        this.db,
+        [productId],
+        userId,
+      );
 
-    const metadataRows = await this.repository.fetchProductMetadata(
-      this.db,
-      [productId, ...collaborativeSignals.map((row) => row.productId)],
-    );
+    const metadataRows = await this.repository.fetchProductMetadata(this.db, [
+      productId,
+      ...collaborativeSignals.map((row) => row.productId),
+    ]);
 
     const metadataById = new Map(
       metadataRows.map((row) => [
@@ -134,7 +149,10 @@ export class RecommendationService {
   }
 
   async trending(limit: number) {
-    const trendingSignals = await this.repository.fetchTrendingSignals(this.db, 24 * 7);
+    const trendingSignals = await this.repository.fetchTrendingSignals(
+      this.db,
+      24 * 7,
+    );
     return trendingSignals.slice(0, limit).map((item) => ({
       productId: item.productId,
       score: Number(item.score.toFixed(4)),

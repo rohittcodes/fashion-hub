@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Heart, Share2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Heart, Share2 } from "lucide-react";
 
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import { Input } from "@acme/ui/input";
 import { toast } from "@acme/ui/toast";
 
-import { useTRPC } from "~/trpc/react";
 import { useWishlist } from "~/lib/wishlist";
+import { useTRPC } from "~/trpc/react";
 import { SimilarItemsSection } from "./recommendations";
 
 // Product Detail Component
@@ -113,7 +113,9 @@ export function ProductDetail(props: {
               <button
                 onClick={() => toggle(product.id)}
                 className="rounded-full bg-background/90 p-2 shadow"
-                aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                aria-label={
+                  isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                }
               >
                 {isWishlisted ? (
                   <Heart className="h-4 w-4 text-pink-600" fill="#DB2777" />
@@ -121,7 +123,10 @@ export function ProductDetail(props: {
                   <Heart className="h-4 w-4 text-muted-foreground" />
                 )}
               </button>
-              <button className="rounded-full bg-background/90 p-2 shadow" aria-label="Share">
+              <button
+                className="rounded-full bg-background/90 p-2 shadow"
+                aria-label="Share"
+              >
                 <Share2 className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
@@ -426,7 +431,9 @@ export function ProductReviews(props: {
             <div key={review.id} className="rounded-lg border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{review.user?.name ?? "Anonymous"}</span>
+                  <span className="font-medium">
+                    {review.user?.name ?? "Anonymous"}
+                  </span>
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <span
@@ -462,6 +469,3 @@ export function ProductReviews(props: {
     </div>
   );
 }
-
-
-

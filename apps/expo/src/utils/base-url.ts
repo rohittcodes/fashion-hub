@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Constants from "expo-constants";
 
 /**
@@ -20,12 +21,12 @@ export const getBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
-  
+
   if (!localhost) {
     throw new Error(
       "Failed to get localhost. Please set EXPO_PUBLIC_API_URL environment variable or check your network connection.",
     );
   }
-  
+
   return `http://${localhost}:3000`;
 };

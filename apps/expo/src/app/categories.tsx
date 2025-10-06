@@ -2,15 +2,18 @@ import React from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 
 import { trpc } from "~/utils/api";
 
 export default function CategoriesScreen() {
   const router = useRouter();
   const categoriesQuery = useQuery(
-    trpc.category.all.queryOptions({ includeInactive: false, withProductCount: true }),
+    trpc.category.all.queryOptions({
+      includeInactive: false,
+      withProductCount: true,
+    }),
   );
 
   if (categoriesQuery.isLoading) {
@@ -98,18 +101,30 @@ export default function CategoriesScreen() {
                     />
                   ) : (
                     <View className="h-full w-full items-center justify-center bg-pink-100">
-                      <Ionicons name="image-outline" size={28} color="#9D174D" />
+                      <Ionicons
+                        name="image-outline"
+                        size={28}
+                        color="#9D174D"
+                      />
                     </View>
                   )}
                 </View>
                 <View className="p-4">
-                  <Text className="font-semibold text-gray-900" numberOfLines={1}>
+                  <Text
+                    className="font-semibold text-gray-900"
+                    numberOfLines={1}
+                  >
                     {item.name}
                   </Text>
-                  {typeof (item as Record<string, unknown>).productCount === "number" ? (
+                  {typeof (item as Record<string, unknown>).productCount ===
+                  "number" ? (
                     <View className="mt-2 self-start rounded-full bg-gray-100 px-2 py-1">
                       <Text className="text-xs text-gray-600">
-                        {(item as unknown as { productCount: number }).productCount} products
+                        {
+                          (item as unknown as { productCount: number })
+                            .productCount
+                        }{" "}
+                        products
                       </Text>
                     </View>
                   ) : null}

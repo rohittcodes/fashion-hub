@@ -4,8 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
-import { trpc } from "~/utils/api";
 import { ProductCard } from "~/components/ProductCard";
+import { trpc } from "~/utils/api";
 
 export default function CategoryDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -15,7 +15,7 @@ export default function CategoryDetailScreen() {
   );
 
   const productsQuery = useQuery(
-    trpc.category.withProducts.queryOptions({ 
+    trpc.category.withProducts.queryOptions({
       slug: slug || "",
       limit: 20,
     }),
@@ -54,12 +54,10 @@ export default function CategoryDetailScreen() {
             {category.name}
           </Text>
           {category.description && (
-            <Text className="text-gray-600">
-              {category.description}
-            </Text>
+            <Text className="text-gray-600">{category.description}</Text>
           )}
         </View>
-        
+
         <View className="flex-1 px-2">
           {products.length > 0 ? (
             <FlatList

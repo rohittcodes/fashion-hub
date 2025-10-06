@@ -4,9 +4,12 @@ import { eq, inArray } from "@acme/db";
 import { categories, products, userInteractions } from "@acme/db/schema";
 
 import { RecommendationService } from "../recommendation/service";
-import { publicProcedure, protectedProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
-const interactionWeights: Record<"view" | "cart" | "purchase" | "wishlist", string> = {
+const interactionWeights: Record<
+  "view" | "cart" | "purchase" | "wishlist",
+  string
+> = {
   view: "0.30",
   cart: "0.70",
   purchase: "1.40",
@@ -22,7 +25,7 @@ export interface RecommendationProduct {
   images: string[] | null;
   tags: string[] | null;
   category: { id: string; name: string; slug: string } | null;
-};
+}
 
 const productSelection = {
   id: products.id,
@@ -154,14 +157,11 @@ export const recommendationRouter = {
         userId,
         productId: input.productId,
         interactionType: input.interactionType,
-        weight: input.weight?.toFixed(2) ?? interactionWeights[input.interactionType],
+        weight:
+          input.weight?.toFixed(2) ?? interactionWeights[input.interactionType],
         metadata: input.metadata ? JSON.stringify(input.metadata) : null,
       });
 
       return { success: true };
     }),
 };
-
-
-
-

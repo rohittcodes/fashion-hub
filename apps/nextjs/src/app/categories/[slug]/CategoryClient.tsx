@@ -52,5 +52,3 @@ export default function CategoryClient({ slug }: { slug: string }) {
     </div>
   );
 }
-
-

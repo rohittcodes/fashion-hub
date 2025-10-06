@@ -33,7 +33,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
         url: `${getBaseUrl()}/api/trpc`,
         headers() {
           const cookies = authClient.getCookie();
-          const base: Record<string, string> = { "x-trpc-source": "expo-react" };
+          const base: Record<string, string> = {
+            "x-trpc-source": "expo-react",
+          };
           if (cookies) base.Cookie = cookies;
           return base;
         },

@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 
+import { CategoryManagement } from "./_components/category-management";
+import { OrdersManagement } from "./_components/orders-management";
 import { ProductManagement } from "./_components/product-management";
 import { UserManagement } from "./_components/user-management";
-import { OrdersManagement } from "./_components/orders-management";
-import { CategoryManagement } from "./_components/category-management";
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"users" | "products" | "orders" | "categories">("users");
+  const [activeTab, setActiveTab] = useState<
+    "users" | "products" | "orders" | "categories"
+  >("users");
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -65,7 +67,7 @@ export default function AdminPage() {
           </nav>
         </div>
 
-        <div className="rounded-lg bg-slate-800 shadow-xl border border-slate-700">
+        <div className="rounded-lg border border-slate-700 bg-slate-800 shadow-xl">
           {activeTab === "users" && <UserManagement />}
           {activeTab === "products" && <ProductManagement />}
           {activeTab === "orders" && <OrdersManagement />}

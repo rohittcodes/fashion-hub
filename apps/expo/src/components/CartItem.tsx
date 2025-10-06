@@ -1,9 +1,9 @@
 import React from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import { Image as ExpoImage } from "expo-image";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
 import { trpc } from "~/utils/api";
@@ -71,7 +71,7 @@ export function CartItem({ item }: CartItemProps) {
   const safeId = (item.product.id ?? "0").slice(-3);
 
   return (
-    <View className="mb-4 flex flex-row items-center rounded-2xl bg-white p-4 shadow-lg border border-gray-100">
+    <View className="mb-4 flex flex-row items-center rounded-2xl border border-gray-100 bg-white p-4 shadow-lg">
       <Pressable>
         <View className="h-24 w-24 overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100">
           {item.product.images && item.product.images.length > 0 ? (
@@ -106,7 +106,7 @@ export function CartItem({ item }: CartItemProps) {
             {item.product.name}
           </Text>
         </Pressable>
-        <Text className="text-sm text-gray-500 font-medium">
+        <Text className="text-sm font-medium text-gray-500">
           {item.product.category.name}
         </Text>
         <Text className="text-sm text-gray-500">
@@ -131,7 +131,9 @@ export function CartItem({ item }: CartItemProps) {
             onPress={() => handleQuantityChange(item.quantity + 1)}
             disabled={
               updateQuantity.isPending ||
-              (item.product.inventory ? item.quantity >= item.product.inventory : false)
+              (item.product.inventory
+                ? item.quantity >= item.product.inventory
+                : false)
             }
           >
             <Text className="text-lg font-bold text-gray-600">+</Text>
@@ -167,23 +169,29 @@ export function CartSummary({
   const total = subtotal + tax + shipping;
 
   return (
-    <View className="rounded-2xl bg-white p-6 shadow-lg border border-gray-100">
-      <Text className="mb-6 text-2xl font-bold text-gray-900">Order Summary</Text>
+    <View className="rounded-2xl border border-gray-100 bg-white p-6 shadow-lg">
+      <Text className="mb-6 text-2xl font-bold text-gray-900">
+        Order Summary
+      </Text>
 
       <View className="space-y-3">
         <View className="flex flex-row justify-between">
-          <Text className="text-gray-600 font-medium">Subtotal ({totals.itemCount} items)</Text>
-          <Text className="text-gray-900 font-semibold">${subtotal.toFixed(2)}</Text>
+          <Text className="font-medium text-gray-600">
+            Subtotal ({totals.itemCount} items)
+          </Text>
+          <Text className="font-semibold text-gray-900">
+            ${subtotal.toFixed(2)}
+          </Text>
         </View>
 
         <View className="flex flex-row justify-between">
-          <Text className="text-gray-600 font-medium">Tax</Text>
-          <Text className="text-gray-900 font-semibold">${tax.toFixed(2)}</Text>
+          <Text className="font-medium text-gray-600">Tax</Text>
+          <Text className="font-semibold text-gray-900">${tax.toFixed(2)}</Text>
         </View>
 
         <View className="flex flex-row justify-between">
-          <Text className="text-gray-600 font-medium">Shipping</Text>
-          <Text className="text-gray-900 font-semibold">
+          <Text className="font-medium text-gray-600">Shipping</Text>
+          <Text className="font-semibold text-gray-900">
             {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
           </Text>
         </View>
@@ -192,7 +200,7 @@ export function CartSummary({
           <View className="rounded-lg bg-orange-50 p-3">
             <View className="flex-row items-center justify-center">
               <Ionicons name="car-outline" size={16} color="#EA580C" />
-              <Text className="text-sm text-orange-700 font-medium text-center ml-1">
+              <Text className="ml-1 text-center text-sm font-medium text-orange-700">
                 Add ${(50 - subtotal).toFixed(2)} more for free shipping!
               </Text>
             </View>
@@ -202,7 +210,9 @@ export function CartSummary({
         <View className="border-t border-gray-200 pt-4">
           <View className="flex flex-row justify-between">
             <Text className="text-xl font-bold text-gray-900">Total</Text>
-            <Text className="text-xl font-bold text-gray-900">${total.toFixed(2)}</Text>
+            <Text className="text-xl font-bold text-gray-900">
+              ${total.toFixed(2)}
+            </Text>
           </View>
         </View>
       </View>
@@ -217,7 +227,9 @@ export function CartSummary({
           router.push("/checkout");
         }}
       >
-        <Text className="text-center text-lg font-bold text-white">Proceed to Checkout</Text>
+        <Text className="text-center text-lg font-bold text-white">
+          Proceed to Checkout
+        </Text>
       </Pressable>
     </View>
   );

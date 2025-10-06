@@ -279,13 +279,9 @@ export function CartIcon() {
 
   return (
     <Link href="/cart">
-      <Button variant="ghost">
-        Cart ({cartCount?.totalQuantity ?? 0})
-      </Button>
+      <Button variant="ghost">Cart ({cartCount?.totalQuantity ?? 0})</Button>
       {(cartCount?.totalQuantity ?? 0) > 0 && (
-        <span className="">
-          {cartCount?.totalQuantity ?? 0}
-        </span>
+        <span className="">{cartCount?.totalQuantity ?? 0}</span>
       )}
     </Link>
   );

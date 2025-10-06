@@ -100,9 +100,18 @@ export const cartRouter = {
 
         const product = (
           await ctx.db
-            .select({ id: products.id, inventory: products.inventory, isActive: products.isActive })
+            .select({
+              id: products.id,
+              inventory: products.inventory,
+              isActive: products.isActive,
+            })
             .from(products)
-            .where(and(eq(products.id, input.productId), eq(products.isActive, true)))
+            .where(
+              and(
+                eq(products.id, input.productId),
+                eq(products.isActive, true),
+              ),
+            )
             .limit(1)
         )[0];
         console.log(
@@ -130,7 +139,12 @@ export const cartRouter = {
             )
             .limit(1)
         )[0];
-        console.log("[cart.add] existingItem:", existingItem ? { id: existingItem.id, quantity: existingItem.quantity } : null);
+        console.log(
+          "[cart.add] existingItem:",
+          existingItem
+            ? { id: existingItem.id, quantity: existingItem.quantity }
+            : null,
+        );
 
         if (existingItem) {
           const newQuantity = existingItem.quantity + input.quantity;
@@ -141,17 +155,18 @@ export const cartRouter = {
             .update(cartItems)
             .set({ quantity: newQuantity })
             .where(eq(cartItems.id, existingItem.id));
-          console.log("[cart.add] updated existing item quantity:", newQuantity);
+          console.log(
+            "[cart.add] updated existing item quantity:",
+            newQuantity,
+          );
           return { success: true } as const;
         }
 
-        await ctx.db
-          .insert(cartItems)
-          .values({
-            userId: ctx.session.user.id,
-            productId: input.productId,
-            quantity: input.quantity,
-          });
+        await ctx.db.insert(cartItems).values({
+          userId: ctx.session.user.id,
+          productId: input.productId,
+          quantity: input.quantity,
+        });
         console.log("[cart.add] inserted new item");
         return { success: true } as const;
       } catch (err) {
