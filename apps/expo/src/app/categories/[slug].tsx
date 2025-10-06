@@ -1,13 +1,13 @@
 import React from "react";
-import { FlatList, Image, Pressable, Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { trpc } from "~/utils/api";
+import { ProductCard } from "~/components/ProductCard";
 
 export default function CategoryDetailScreen() {
-  const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
   const categoryQuery = useQuery(
@@ -46,15 +46,15 @@ export default function CategoryDetailScreen() {
   const { category, products } = productsQuery.data;
 
   return (
-    <SafeAreaView edges={["bottom"]} className="bg-background">
+    <SafeAreaView edges={["bottom"]} className="flex-1 bg-background">
       <Stack.Screen options={{ title: category.name }} />
-      <View className="h-full w-full bg-background pb-28">
+      <View className="flex-1 bg-background pb-28">
         <View className="p-4">
-          <Text className="mb-2 text-2xl font-bold text-foreground">
+          <Text className="mb-2 text-2xl font-bold text-gray-900">
             {category.name}
           </Text>
           {category.description && (
-            <Text className="text-muted-foreground">
+            <Text className="text-gray-600">
               {category.description}
             </Text>
           )}
@@ -66,50 +66,7 @@ export default function CategoryDetailScreen() {
               data={products}
               numColumns={2}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <View className="m-2 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-                  <Pressable onPress={() => router.push(`/products/${item.slug}`)}>
-                    <View className="aspect-square bg-gray-100">
-                      {item.images && item.images.length > 0 ? (
-                        <Image
-                          source={{ uri: item.images[0] }}
-                          className="h-full w-full"
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View className="flex h-full w-full items-center justify-center">
-                          <Text className="text-gray-400">No Image</Text>
-                        </View>
-                      )}
-                    </View>
-                  </Pressable>
-
-                  <View className="p-4">
-                    <Pressable onPress={() => router.push(`/products/${item.slug}`)}>
-                      <Text className="mt-1 text-base font-semibold text-gray-900">
-                        {item.name}
-                      </Text>
-                    </Pressable>
-
-                    <Text className="mt-1 text-sm text-gray-600" numberOfLines={2}>
-                      {item.description}
-                    </Text>
-
-                    <View className="mt-3 flex flex-row items-center justify-between">
-                      <View className="flex flex-row items-center">
-                        <Text className="text-lg font-bold text-gray-900">
-                          ${item.price}
-                        </Text>
-                        {item.compareAtPrice && (
-                          <Text className="ml-2 text-sm text-gray-500 line-through">
-                            ${item.compareAtPrice}
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              )}
+              renderItem={({ item }) => <ProductCard product={item as never} />}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 54 }}
             />

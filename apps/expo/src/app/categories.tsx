@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -9,7 +9,9 @@ import { trpc } from "~/utils/api";
 
 export default function CategoriesScreen() {
   const router = useRouter();
-  const categoriesQuery = useQuery(trpc.category.all.queryOptions({}));
+  const categoriesQuery = useQuery(
+    trpc.category.all.queryOptions({ includeInactive: false, withProductCount: true }),
+  );
 
   if (categoriesQuery.isLoading) {
     return (
@@ -65,7 +67,7 @@ export default function CategoriesScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <Stack.Screen options={{ title: "Categories" }} />
-      <View className="h-full w-full bg-gray-50 pb-28">
+      <View className="flex-1 bg-gray-50 pb-28">
         <View className="p-6">
           <Text className="mb-2 text-3xl font-bold text-gray-900">
             Shop by Category
@@ -74,40 +76,53 @@ export default function CategoriesScreen() {
             Discover products in your favorite categories
           </Text>
         </View>
-        
+
         <View className="flex-1 px-4">
           <FlatList
             data={categories}
             keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={{ justifyContent: "space-between" }}
             renderItem={({ item }) => (
               <Pressable
-                className="mb-4 rounded-2xl bg-white p-6 shadow-md border border-gray-200"
+                className="mb-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+                style={{ width: "48%" }}
                 onPress={() => router.push(`/categories/${item.slug}`)}
               >
-                <View className="flex flex-row items-center justify-between">
-                  <View className="flex-1">
-                    <Text className="text-xl font-bold text-gray-900">
-                      {item.name}
-                    </Text>
-                    {item.description && (
-                      <Text className="mt-2 text-sm text-gray-700">
-                        {item.description}
-                      </Text>
-                    )}
-                    <View className="mt-3 self-start rounded-full bg-pink-600/10 px-3 py-1">
-                      <Text className="text-xs font-semibold text-pink-700">
-                        Shop Now →
+                <View className="aspect-square overflow-hidden bg-gray-100">
+                  {item.image ? (
+                    <Image
+                      source={{ uri: item.image }}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className="h-full w-full items-center justify-center bg-pink-100">
+                      <Ionicons name="image-outline" size={28} color="#9D174D" />
+                    </View>
+                  )}
+                </View>
+                <View className="p-4">
+                  <Text className="font-semibold text-gray-900" numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  {typeof (item as Record<string, unknown>).productCount === "number" ? (
+                    <View className="mt-2 self-start rounded-full bg-gray-100 px-2 py-1">
+                      <Text className="text-xs text-gray-600">
+                        {(item as unknown as { productCount: number }).productCount} products
                       </Text>
                     </View>
-                  </View>
-                  <View className="ml-4 rounded-full bg-pink-600 p-4">
-                    <Ionicons name="storefront-outline" size={24} color="white" />
-                  </View>
+                  ) : null}
                 </View>
               </Pressable>
             )}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 54 }}
+            ListEmptyComponent={
+              <View className="flex-1 items-center justify-center py-20">
+                <Text className="text-gray-500">No categories found</Text>
+              </View>
+            }
           />
         </View>
       </View>

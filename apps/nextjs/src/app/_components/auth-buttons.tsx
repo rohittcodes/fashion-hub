@@ -7,6 +7,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Button } from "@acme/ui/button";
 
 import { useTRPC } from "~/trpc/react";
+import { SignInButton } from "./sign-in-button";
 
 export function AuthButtons() {
   const [mounted, setMounted] = useState(false);
@@ -36,11 +37,7 @@ export function AuthButtons() {
     );
   }
 
-  return (
-    <Link href="/api/auth/sign-in">
-      <Button variant="primary">Sign in</Button>
-    </Link>
-  );
+  return <SignInButton />;
 }
 
 
