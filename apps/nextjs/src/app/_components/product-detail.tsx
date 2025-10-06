@@ -12,6 +12,7 @@ import { toast } from "@acme/ui/toast";
 
 import { useTRPC } from "~/trpc/react";
 import { useWishlist } from "~/lib/wishlist";
+import { SimilarItemsSection } from "./recommendations";
 
 // Product Detail Component
 export function ProductDetail(props: {
@@ -299,6 +300,10 @@ export function ProductDetail(props: {
           onAddReview={handleAddReview}
         />
       </div>
+
+      <div className="mt-16">
+        <SimilarItemsSection productId={product.id} />
+      </div>
     </div>
   );
 }
@@ -457,3 +462,6 @@ export function ProductReviews(props: {
     </div>
   );
 }
+
+
+

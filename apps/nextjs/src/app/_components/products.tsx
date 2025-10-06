@@ -16,6 +16,7 @@ import { toast } from "@acme/ui/toast";
 
 import { useTRPC } from "~/trpc/react";
 import { useWishlist } from "~/lib/wishlist";
+import { useRecommendationTracking } from "~/lib/recommendations";
 import { Heart } from "lucide-react";
 
 // Product Card Component
@@ -33,6 +34,7 @@ export function ProductCard(props: {
   };
 }) {
   const { product } = props;
+  const { track } = useRecommendationTracking();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { isWishlisted, toggle } = useWishlist(product.id);

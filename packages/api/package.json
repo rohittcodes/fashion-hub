@@ -22,6 +22,7 @@
     "@acme/db": "workspace:*",
     "@acme/validators": "workspace:*",
     "@trpc/server": "catalog:",
+    "date-fns": "^4.1.0",
     "superjson": "2.2.2",
     "zod": "catalog:"
   },
