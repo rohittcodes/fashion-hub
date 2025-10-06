@@ -50,3 +50,6 @@ dist/
 
 # turbo
 .turbo
+
+ADVANCED_FEATURES.md
+FEATURE_PROMPTS.md
