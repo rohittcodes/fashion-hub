@@ -15,7 +15,6 @@ import { Button } from "@acme/ui/button";
 import { Input } from "@acme/ui/input";
 import { toast } from "@acme/ui/toast";
 
-import { useRecommendationTracking } from "~/lib/recommendations";
 import { useWishlist } from "~/lib/wishlist";
 import { useTRPC } from "~/trpc/react";
 
