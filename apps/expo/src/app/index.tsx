@@ -8,7 +8,6 @@ import { Ionicons } from "@expo/vector-icons";
 import type { RouterOutputs } from "~/utils/api";
 import { ProductCard, ProductCardSkeleton } from "~/components/ProductCard";
 import { trpc } from "~/utils/api";
-import { ForYouSection, TrendingSection } from "~/components/Recommendations";
 // Auth is handled via a dedicated onboarding screen now
 
 function HeroSection() {
@@ -121,12 +120,6 @@ export default function Index() {
               </View>
             )}
           </View>
-        </View>
-        
-        {/* Recommendations */}
-        <View className="px-4">
-          <ForYouSection />
-          <TrendingSection />
         </View>
       </ScrollView>
       
