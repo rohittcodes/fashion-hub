@@ -4,7 +4,7 @@
 ![build](https://img.shields.io/badge/build-pnpm%20turbo-blue)
 ![type safety](https://img.shields.io/badge/types-TypeScript-informational)
 
-Fashion Hub is a modern e‑commerce monorepo showcasing a production‑ready personalization stack. It combines a Next.js web app, an Expo mobile app, and a type‑safe API layer to deliver personalized product recommendations, rich product browsing, and fast, maintainable developer workflows.
+Vibe Shop is a modern e‑commerce monorepo showcasing a production‑ready personalization stack. It combines a Next.js web app, an Expo mobile app, and a type‑safe API layer to deliver personalized product recommendations, rich product browsing, and fast, maintainable developer workflows built using [Rube MCP](https://rube.app).
 
 <p align="center">
   <em>Personalized recommendations • Type‑safe APIs • Web + Native • Modern DX</em>
