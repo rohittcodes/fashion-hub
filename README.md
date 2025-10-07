@@ -1,4 +1,4 @@
-# Fashion Hub
+# Vibe shop
 
 ![license: MIT](https://img.shields.io/badge/license-MIT-green)
 ![build](https://img.shields.io/badge/build-pnpm%20turbo-blue)
